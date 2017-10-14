@@ -43,8 +43,8 @@ CMD / KEYWORD
 How to activate AutoLike feature ?
 ------
 - `1. Goto src/bot.js`
-- `2. Then find this '//LINE.aLike() //AutoLike (CAUSE LAG)'`
-- `3. Change into this 'LINE.aLike()'`
+- `2. Then find this " //LINE.aLike() //AutoLike (CAUSE LAG) " (without quotes)`
+- `3. Change into this " LINE.aLike() " (without quotes)`
 - `4. DONE`
 
 Author
