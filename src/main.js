@@ -678,7 +678,7 @@ class LINE extends LineAPI {
 ====================";
 				this._client.sendMessage(0,bang);
 			}else if(vx[2] == "arg1" && panjang.length > 30 && panjang[0] == "u"){
-				let timeline_post = await this._getHome(txt.mid,config.chanToken);
+				let timeline_post = await this._getHome(txt,config.chanToken);
 				let orangnya = await this._getContacts([txt]);
 				let ress = timeline_post.result;
 				seq.text = 
