@@ -12,8 +12,8 @@ check your nodejs version
 
 How to run bot for the first time ?
 ------
-- `git clone https://gitlab.com/m.rakha.f/my.git`
-- `cd my && npm install`
+- `git clone https://gitlab.com/m.rakha.f/alphat-new-generation.git`
+- `cd alphat-new-generation && npm install`
 - `insert your admin mid in main.js`
 - `npm start`
 
