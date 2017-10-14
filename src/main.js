@@ -8,7 +8,7 @@ const config = require('./config');
 const { Message, OpType, Location } = require('../curve-thrift/line_types');
 let exec = require('child_process').exec;
 
-const myBot = ['u5ee3f8b1c2783990512a02c14d312c89','u88551cb4b9ab9508138d5d35da962c9c'];
+const myBot = ['u5ee3f8b1c2783990512a02c14d312c89','u88551cb4b9ab9508138d5d35da962c9c'];//INSERT YOUR ADMIN MID HERE
 var vx = {};var midnornama = "";var pesane = "";var kickhim = "";var waitMsg = "no";//DO NOT CHANGE THIS
 var banList = [];//Banned list
 var komenTL = "AutoLike by GoogleX\nline://ti/p/~rakamastah"; //Comment for timeline
@@ -54,6 +54,7 @@ class LINE extends LineAPI {
 => !cancel\n\
 => !cekid\n\
 => !gURL\n\
+=> !ginfo\n\
 => !halo\n\
 => !kepo\n\
 => !key\n\
