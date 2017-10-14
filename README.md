@@ -32,7 +32,9 @@ Still work :construction_worker:
 - GroupInfo
 
 **TO - DO**
-- Broadcast message to all contact
+- Add keyword for (Send Image & Broadcast)
+- Send VN
+- Send Video
 
 CMD / KEYWORD
 ------
