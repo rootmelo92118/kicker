@@ -40,6 +40,13 @@ CMD / KEYWORD
 ------
 **type !key for the keyword**
 
+How to activate AutoLike feature ?
+------
+- `1. Goto src/bot.js`
+- `2. Then find this '//LINE.aLike() //AutoLike (CAUSE LAG)'`
+- `3. Change into this 'LINE.aLike()'`
+- `4. DONE`
+
 Author
 ------
 [@alfathdirk](https://instagram.com/alfathdirk) (LINE ALPHAT JS)<br>
