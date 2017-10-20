@@ -10,7 +10,7 @@ Thanks to @Alfathdirk @TCR_TEAM\n\
 ***Copyright belongs to the author***");
 
 /*
-| This config is for auth/login with token
+| This constant is for auth/login with token
 | 
 | Change it to your authToken & your certificate
 */
@@ -23,7 +23,6 @@ let client =  new LineConnect();
 //let client =  new LineConnect(auth);
 
 client.startx().then(async (res) => {
-	let ops;
 	while(true) {
 		try {
 			ops = await client.fetchOps(res.operation.revision);
@@ -36,6 +35,6 @@ client.startx().then(async (res) => {
 				LINE.poll(ops[op])
 			}
 		}
-		//LINE.aLike() //AutoLike (CAUSE LAG)
+		//LINE.aLike() //AutoLike (CAUSES LAG)
 	}
 });
