@@ -41,12 +41,9 @@ class LineConnect extends LineAPI {
 
   async startx () {
     if (typeof this.authToken != 'undefined'){
-      return new Promise((resolve, reject) => {
-        this._tokenLogin(this.authToken, this.certificate).then(async (res) => {
-		  await this._chanConn();
-          resolve(this.longpoll());
-        });
-      })
+		await this._tokenLogin(this.authToken, this.certificate);
+		await this._chanConn();
+		return this.longpoll();
     } else {
       return new Promise((resolve, reject) => {
         this.getQrFirst().then(async (res) => {
@@ -57,7 +54,7 @@ class LineConnect extends LineAPI {
   }
   
   fetchOps(rev) {
-    return this._fetchOps(rev, 1);
+    return this._fetchOps(rev, 2);
   }
 
   fetchOperations(rev) {
@@ -67,7 +64,7 @@ class LineConnect extends LineAPI {
 
   longpoll() {
     return new Promise((resolve, reject) => {
-      this._fetchOps(this.revision, 1).then((operations) => {
+      this._fetchOps(this.revision, 2).then((operations) => {
         if (!operations) {
           console.log('No operations');
           reject('No operations');
