@@ -47,7 +47,7 @@ class LineAPI {
 	}
     this.options = options;
     this.connection =
-      thrift.createHttpConnection(this.config.LINE_DOMAIN, 443, this.options);
+      thrift.createHttpConnection(this.config.LINE_DOMAIN_4TH, 443, this.options);
     this.connection.on('error', (err) => {
       console.log('err',err);
       return err;
@@ -326,7 +326,7 @@ class LineAPI {
   async _getAlbum(gid,ctoken){
 	let bot = await this._client.getProfile();
 	let optionx = {
-        uri: this.gdLine+'/mh/api/v27/post/list.json?homeId='+gid,
+        uri: this.gdLine+'/mh/album/v3/albums?sourceType=GROUPHOME&homeId='+gid,
         headers: {
             "Content-Type": "application/json",
 			"X-Line-Mid": bot.mid,
@@ -351,7 +351,7 @@ class LineAPI {
     M.contentType = 1;
     M.contentPreview = null;
 	//let imgID = await this._client.sendMessage(0,M);//console.info("image/"+x[x.length-1]);
-	console.info("aa");
+	console.info("aa");console.info(albumId);console.info(gid);
 
 	const filepath = path.resolve(img)
     fs.readFile(filepath,async (err, bufs) => {
@@ -365,7 +365,7 @@ class LineAPI {
             ver: '1.0'
           })
         };
-        return this.postAlbum("http://obs-jp.line-apps.com/oa/album/a/object_info.nhn:443",bot.mid,albumId,ctoken, data, filepath).then((res) => (res.error ? console.log('err',res.error) : console.log('done')));
+        return this.postAlbum("http://obs-jp.line-apps.com/talk/m/object_info.nhn",bot.mid,albumId,ctoken, data, filepath).then((res) => (res.error ? console.log('err',res.error) : console.log('done')));
     });
   }*/
   
@@ -534,7 +534,7 @@ class LineAPI {
 		  "X-Line-Mid": botmid,
 		  "X-Line-Album": albumId,
           "x-lct": ctoken,
-		  "x-obs-host": "obs-jp.line-apps.com:443"
+		  "x-obs-host": "obs-jp.line-apps.com"
         })
         .timeout(120000)
         .field(data)
@@ -550,14 +550,16 @@ class LineAPI {
     return await this._client.fetchOperations(revision, count);
   }
 
-  _fetchOps(revision, count = 5) {
+  _fetchOps(revision, count = 0) {
     return this._client.fetchOps(revision, count,0,0);
   }
 
-  getJson(path) {
+  getJson(path,headerx) {
     return new Promise((resolve, reject) => (
       unirest.get(`https://${this.config.LINE_DOMAIN}${path}`)
-        .headers(this.config.Headers)
+        .headers(
+		  headerx
+		)
         .timeout(120000)
         .end((res) => (
           res.error ? reject(res.error) : resolve(res.body)
