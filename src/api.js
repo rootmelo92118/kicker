@@ -11,7 +11,8 @@ const {
   LoginResultType,
   IdentityProvider,
   ContentType,
-  Message
+  Message,
+  LoginRequest
 } = require('../curve-thrift/line_types');
 const imgArr = ['png','jpg','jpeg','gif','bmp','webp'];
 
@@ -101,44 +102,51 @@ class LineAPI {
       });
     });
   }
-
-  _login(id, password) {
-    const pinVerifier = new PinVerifier(id, password);
-    return new Promise((resolve, reject) => (
-      this._setProvider(id)
-      .then(() => {
-        this.setTHttpClient();
-        this._client.getRSAKeyInfo(this.provider, (key, credentials) => {
-          const rsaCrypto = pinVerifier.getRSACrypto(credentials);
-          try {
-            this._client.loginWithIdentityCredentialForCertificate(
-              this.provider, rsaCrypto.keyname, rsaCrypto.credentials,
-              true, this.config.ip, 'purple-line', '',
-              (err, result) => {
-                if (err) {
-                  console.log('LoginFailed');
-                  console.error(err);
-                  return reject(err);
-                }
-                this._client.pinCode = result.pinCode;
-                this.alertOrConsoleLog(
-                  `Enter Pincode ${result.pinCode}
-                  to your mobile phone in 2 minutes`
-                );
-                this._checkLoginResultType(result.type, result);
-                this._loginWithVerifier(result)
-                .then((verifierResult) => {
-                  this._checkLoginResultType(verifierResult.type, verifierResult);
-                  resolve(verifierResult);
-                });
-              });
-          } catch(error) {
-            console.log('error');
-            console.log(error);
-          }
-        });
-      })
-    ));
+  
+  _xlogin(id,password){
+	  const pinVerifier = new PinVerifier(id, password);
+      return new Promise((resolve, reject) => (
+	     this._setProvider(id).then(() => {
+			 this.setTHttpClient();
+			 this._getRSAKeyInfo(this.provider, (key, credentials) => {
+				 this.options.path = this.config.LINE_RS;
+                 this.setTHttpClient(this.options);
+				 const rsaCrypto = pinVerifier.getRSACrypto(credentials);
+				 let reqx = new LoginRequest();
+				 reqx.type = 0;
+				 reqx.identityProvider = this.provider;
+				 reqx.identifier = rsaCrypto.keyname;
+				 reqx.password = rsaCrypto.credentials;
+				 reqx.keepLoggedIn = true;
+				 reqx.accessLocation = this.config.ip;
+				 reqx.systemName = 'LineAlphatFork-PC';
+				 reqx.e2eeVersion = 0;
+				 try{
+					 this._client.loginZ(reqx,
+					 (err,success) => {
+						 if (err) {
+                             console.log('LoginFailed');
+                             console.error(err);
+                             return reject(err);
+                         }
+						 this.options.path = this.config.LINE_HTTP_URL;
+                         this.setTHttpClient(this.options);
+						 this._client.pinCode = success.pinCode;
+                		 console.info("\n\n=============================\nEnter This Pincode => "+success.pinCode+"\nto your mobile phone in 2 minutes\n=============================");
+                		 this._checkLoginResultType(success.type, success);
+               		     this._loginWithVerifier(success).then((verifierResult) => {
+							 config.tokenn = verifierResult.authToken;
+               		         this._checkLoginResultType(verifierResult.type, verifierResult);
+               		         resolve(verifierResult);
+              		     });
+					 });
+				 }catch(error) {
+                     console.log('error');
+                     console.log(error);
+                 }
+			 })
+		 })
+	  ));
   }
 
   _loginWithVerifier() {
@@ -261,6 +269,11 @@ class LineAPI {
   async _dlImg(uri, filenames, callback){
     await request.head(uri, function(err, res, body){request(uri).pipe(fs.createWriteStream(filenames)).on('close', callback);});
   };
+  
+  async _getRSAKeyInfo(provider, callback){
+	  let result = await this._client.getRSAKeyInfo(provider);
+	  callback(result.keynm, result);
+  }
   
   async _fsUnlinkGambar(extF){
 	if(extF == "webp"){
@@ -558,7 +571,7 @@ class LineAPI {
     return new Promise((resolve, reject) => (
       unirest.get(`https://${this.config.LINE_DOMAIN}${path}`)
         .headers(
-		  headerx
+		  this.config.Headers
 		)
         .timeout(120000)
         .end((res) => (
