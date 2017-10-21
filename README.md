@@ -1,5 +1,5 @@
 # alphat-new-generation
-Forked version of LineAlphat JS (Selfbot) #DEV #21/10/2017 #14PM
+Forked version of LineAlphat JS (Selfbot) #DEV #21/10/2017 #20PM
 <br>LineAlphat -> https://github.com/alfathdirk/LineAlphatJS<br><br>Status: Very Good
 
 <hr>
@@ -27,6 +27,7 @@ Still work :construction_worker:
 - Bug fixed
 - Add more keyword
 - Add login with email & password
+- New feature: sms
 
 **TO - DO**
 - Add keyword for (Send Image & Broadcast)
