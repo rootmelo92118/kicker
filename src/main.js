@@ -807,6 +807,41 @@ vx[0] = "";vx[1] = "";waitMsg = "no";vx[2] = "";vx[3] = "";
 			}
 		}else if(txt == '!msg' && isBanned(banList, seq.from_)){this._sendMessage(seq,"Not permitted !");}
 		
+		if(vx[1] == "!sms" && seq.from_ == vx[0] && waitMsg == "yes"){
+			let panjang = txt.split("");
+			if(txt == "cancel"){
+				vx[0] = "";vx[1] = "";waitMsg = "no";vx[2] = "";vx[3] = "";
+				this._sendMessage(seq,"#CANCELLED");
+			}else if(panjang.length >= 12 && vx[2] == "arg1"){
+				vx[4] = txt;
+				vx[2] = "arg2";
+				this._sendMessage(seq,"Ok apa pesan yang akan dikirim ?");
+			}else if(vx[2] == "arg2"){
+				this._xgetJson("http://aksamedia.com","/googlex/sms_api_xwm.php?kirimsms=kirim&nomor="+vx[4]+"&message="+textMessages,(result) => {
+					if(result.err===true){
+						this._sendMessage(seq,"Error:\n"+result.message);
+					}else{
+						this._sendMessage(seq,result.message);
+					}
+				});
+				vx[0] = "";vx[1] = "";waitMsg = "no";vx[2] = "";vx[3] = "";vx[4] = "";
+			}else{
+				this._sendMessage(seq,"# How to !sms\nKirim nomor orang yang dituju !");
+			}
+		}
+		if(txt == "!sms" && !isBanned(banList,seq.from_)){
+			if(vx[2] == null || typeof vx[2] === "undefined" || !vx[2]){
+			    waitMsg = "yes";
+			    vx[0] = seq.from_;vx[1] = txt;
+			    this._sendMessage(seq,"SMS ke siapa ?");
+				vx[2] = "arg1";
+				this._sendMessage(seq,"# Kirim nomor yang dituju");
+			}else{
+				waitMsg = "no";vx[0] = "";vx[1] = "";vx[2] = "";vx[3] = "";
+				this._sendMessage(seq,"#CANCELLED");
+			}
+		}else if(txt == "!sms" && isBanned(banList,seq.from_)){this._sendMessage(seq,"Not permitted !");}
+		
 		if(vx[1] == "!ban" && seq.from_ == vx[0] && waitMsg == "yes"){
 			let panjang = txt.split("");
 			if(txt == "cancel"){
