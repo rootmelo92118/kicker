@@ -9,6 +9,8 @@ class LineConnect extends LineAPI {
 
     if (typeof options !== 'undefined') {
       this.authToken = options.authToken;
+	  this.email = options.email;
+	  this.password = options.password;
       this.certificate = options.certificate;
       this.config.Headers['X-Line-Access'] = options.authToken;
     }
@@ -40,11 +42,18 @@ class LineConnect extends LineAPI {
   }
 
   async startx () {
-    if (typeof this.authToken != 'undefined'){
+    if (this.authToken){
 		await this._tokenLogin(this.authToken, this.certificate);
 		await this._chanConn();
+		let icH = await this._channel.issueChannelToken("1341209950");config.chanToken = icH.channelAccessToken;
 		return this.longpoll();
-    } else {
+    } else if(this.password && this.email){
+		await this._xlogin(this.email,this.password);
+		await this._chanConn();
+		console.info("Success Login!");
+		let icH = await this._channel.issueChannelToken("1341209950");config.chanToken = icH.channelAccessToken;
+		return this.longpoll();
+	} else {
       return new Promise((resolve, reject) => {
         this.getQrFirst().then(async (res) => {
           resolve(this.longpoll());
