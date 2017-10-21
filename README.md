@@ -1,5 +1,5 @@
 # alphat-new-generation
-Forked version of LineAlphat JS (Selfbot) #DEV #14/10/2017 #12PM
+Forked version of LineAlphat JS (Selfbot) #DEV #21/10/2017 #14PM
 <br>LineAlphat -> https://github.com/alfathdirk/LineAlphatJS<br><br>Status: Very Good
 
 <hr>
@@ -25,11 +25,8 @@ Still work :construction_worker:
 ----
 **CHANGELOG**
 - Bug fixed
-- AutoLike
-- AutoComment
-- Broadcast
-- CreateAlbum
-- GroupInfo
+- Add more keyword
+- Add login with email & password
 
 **TO - DO**
 - Add keyword for (Send Image & Broadcast)
