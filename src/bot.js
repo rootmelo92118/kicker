@@ -10,13 +10,15 @@ Thanks to @Alfathdirk @TCR_TEAM\n\
 ***Copyright belongs to the author***");
 
 /*
-| This constant is for auth/login with token
+| This constant is for auth/login
 | 
-| Change it to your authToken & your certificate
+| Change it to your authToken / your email & password
 */
 const auth = {
 	authToken: '',
-	certificate: ''
+	certificate: '',
+	email: '',
+	password: ''
 }
 
 let client =  new LineConnect();
@@ -35,6 +37,6 @@ client.startx().then(async (res) => {
 				LINE.poll(ops[op])
 			}
 		}
-		//LINE.aLike() //AutoLike (CAUSES LAG)
+		//LINE.aLike() //AutoLike (CAUSE LAG)
 	}
 });
