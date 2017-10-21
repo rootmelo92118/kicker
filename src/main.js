@@ -76,6 +76,7 @@ class LINE extends LineAPI {
 => !myid\n\
 => !sendcontact\n\
 => !setting\n\
+=> !sms\n\
 => !speed\n\
 => !tagall\n\
 => !unmute *ADMIN*\n\
