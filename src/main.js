@@ -475,7 +475,7 @@ class LINE extends LineAPI {
     }
 
     async textMessage(textMessages, seq, param, lockt) {
-        //const [ cmd, payload ] = textMessages.split(' ');
+        const [ cmd, payload ] = textMessages.split(' ');
 		const gTicket = textMessages.split('line://ti/g/');
 		const linktxt = textMessages.split('http');
         const txt = textMessages.toLowerCase();
