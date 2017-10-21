@@ -98,13 +98,11 @@ class LINE extends LineAPI {
 
     poll(operation) {
         if(operation.type == 25 || operation.type == 26) {
-			console.info(operation.message);
             const txt = (operation.message.text !== '' && operation.message.text != null ) ? operation.message.text : '' ;
             let message = new Message(operation.message);
             this.receiverID = message.to = (operation.message.to === myBot[0]) ? operation.message.from_ : operation.message.to ;
             Object.assign(message,{ ct: operation.createdTime.toString() });
             if(waitMsg == "yes" && operation.message.from_ == vx[0] && this.stateStatus.mute != 1){
-				console.info("Wait MSG");
 				this.textMessage(txt,message,message.text)
 			}else if(this.stateStatus.mute != 1){this.textMessage(txt,message);
 			}else if(txt == "!unmute" && isAdminOrBot(operation.message.from_) && this.stateStatus.mute == 1){
@@ -116,8 +114,6 @@ class LINE extends LineAPI {
         if(operation.type == 13 && this.stateStatus.cancel == 1 && !isAdminOrBot(operation.param2)) {//someone inviting..
             this.cancelAll(operation.param1);
         }
-		
-		if(operation.type == 53 || operation.type == 43 || operation.type == 41 || operation.type == 24 || operation.type == 15 || operation.type == 21){console.info(operation);}
 		
 		if(operation.type == 16 && this.stateStatus.salam == 1){//join group
 			let halo = new Message();
@@ -207,7 +203,6 @@ class LINE extends LineAPI {
 
         if(operation.type == 55){ //ada reader
 
-		    console.info(operation);
             const idx = this.checkReader.findIndex((v) => {
                 if(v.group == operation.param1) {
                     return v
@@ -1113,10 +1108,8 @@ Link Download: "+idU.id+"\n";
                 if(listMember[i].mid==param){
 					let namanya = listMember[i].dn;
 					seq.text = 'Halo @'+namanya+', Selamat datang bro ! Salam Kenal ^_^';
-					console.info(namanya);
 					let midnya = listMember[i].mid;
 					let kata = seq.text.split("@").slice(0,1);
-					console.info(kata);
 					let kata2 = kata[0].split("");
 					let panjang = kata2.length;
                     let member = [namanya];
@@ -1155,10 +1148,8 @@ Link Download: "+idU.id+"\n";
                 if(listMember[i].mid==param){
 					let namanya = listMember[i].dn;
 					seq.text = 'Goodbye ! @'+namanya;
-					console.info(namanya);
 					let midnya = listMember[i].mid;
 					let kata = seq.text.split("@").slice(0,1);
-					console.info(kata);
 					let kata2 = kata[0].split("");
 					let panjang = kata2.length;
                     let member = [namanya];
@@ -1249,7 +1240,7 @@ Link Download: "+idU.id+"\n";
         }
 		
 		if(txt == "!whattime" && !isBanned(banList,seq.from_)){
-			let d = new Date();let xmenit = d.getMinutes().toString().split("");console.info(xmenit.length);
+			let d = new Date();let xmenit = d.getMinutes().toString().split("");
 			if(xmenit.length < 2){
 				this._sendMessage(seq, d.getHours()+":0"+d.getMinutes());
 			}else{
@@ -1295,7 +1286,7 @@ Link Download: "+idU.id+"\n";
         const joinByUrl = ['!gurl'];
         if(joinByUrl.includes(txt)) {
             this._sendMessage(seq,`Updating group ...`);
-            let updateGroup = await this._getGroup(seq.to);console.info(updateGroup);
+            let updateGroup = await this._getGroup(seq.to);
             if(updateGroup.preventJoinByTicket === true) {
                 updateGroup.preventJoinByTicket = false;
 				await this._updateGroup(updateGroup);
@@ -1328,8 +1319,8 @@ Link Download: "+idU.id+"\n";
 		
 		if(gTicket[0] == "!join" && isAdminOrBot(seq.from_)){
 			let sudah = "no";
-			let grp = await this._client.findGroupByTicket(gTicket[1]);console.info(grp);
-			let lGroup = await this._client.getGroupIdsJoined();console.info(lGroup);
+			let grp = await this._client.findGroupByTicket(gTicket[1]);
+			let lGroup = await this._client.getGroupIdsJoined();
 			for(var i = 0; i < lGroup.length; i++){
 				if(grp.id == lGroup[i]){
 					sudah = "ya";
