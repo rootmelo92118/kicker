@@ -6,12 +6,14 @@ const webp = require('webp-converter');
 const rp = require('request-promise');
 const config = require('./config');
 const { Message, OpType, Location } = require('../curve-thrift/line_types');
-let exec = require('child_process').exec;
+//let exec = require('child_process').exec;
 
-const myBot = ['u5ee3f8b1c2783990512a02c14d312c89','u88551cb4b9ab9508138d5d35da962c9c'];//INSERT YOUR ADMIN MID HERE
-var vx = {};var midnornama = "";var pesane = "";var kickhim = "";var waitMsg = "no";//DO NOT CHANGE THIS
-var banList = [];//Banned list
+const myBot = ['u88551cb4b9ab9508138d5d35da962c9c'];
+const banList = [];//Banned list
+var vx = {};var midnornama,pesane,kickhim;var waitMsg = "no";//DO NOT CHANGE THIS
+const imgArr = ['png','jpg','jpeg','gif','bmp','webp'];//DO NOT CHANGE THIS
 var komenTL = "AutoLike by GoogleX\nline://ti/p/~rakamastah"; //Comment for timeline
+var bcText = "Masukan teks untuk broadcast";
 var limitposts = '10'; //Output timeline post
 
 function isAdminOrBot(param) {
@@ -30,6 +32,10 @@ function isTGet(string,param){
 	return string.includes(param);
 }
 
+function isImg(param) {
+    return imgArr.includes(param);
+}
+
 class LINE extends LineAPI {
     constructor() {
         super();
@@ -37,12 +43,13 @@ class LINE extends LineAPI {
         this.receiverID = '';
         this.checkReader = [];
         this.stateStatus = {
+			autojoin: 0, //0 = No, 1 = Yes
             cancel: 0, //0 = Auto cancel off, 1 = on
             kick: 1, //1 = Yes, 0 = No
-			salam: 1, //1 = Yes, 0 = No
 			mute: 0, //1 = Mute, 0 = Unmute
 			protect: 1, //Protect Qr,Kicker
-			qr: 0 //0 = Gk boleh, 1 = Boleh
+			qr: 0, //0 = Gk boleh, 1 = Boleh
+			salam: 1 //1 = Yes, 0 = No
         }
 		this.keyhelp = "\n\
 ====================\n\
@@ -50,11 +57,14 @@ class LINE extends LineAPI {
 => !addcontact *ADMIN*\n\
 => !ban *ADMIN*\n\
 => !banlist\n\
+=> !botcontact\n\
 => !botleft *ADMIN*\n\
+=> broadcast *ADMIN*\n\
 => !cancel\n\
 => !cekid\n\
-=> !gURL\n\
+=> getimage\n\
 => !ginfo\n\
+=> !gURL\n\
 => !halo\n\
 => !kepo\n\
 => !key\n\
@@ -70,6 +80,7 @@ class LINE extends LineAPI {
 => !tagall\n\
 => !unmute *ADMIN*\n\
 => !unban *ADMIN*\n\
+=> !whattime\n\
 => !youtube\n\
 \n\n# Gunakan bot dengan bijak ^_^";
         var that = this;
@@ -87,11 +98,13 @@ class LINE extends LineAPI {
 
     poll(operation) {
         if(operation.type == 25 || operation.type == 26) {
+			console.info(operation.message);
             const txt = (operation.message.text !== '' && operation.message.text != null ) ? operation.message.text : '' ;
             let message = new Message(operation.message);
             this.receiverID = message.to = (operation.message.to === myBot[0]) ? operation.message.from_ : operation.message.to ;
             Object.assign(message,{ ct: operation.createdTime.toString() });
             if(waitMsg == "yes" && operation.message.from_ == vx[0] && this.stateStatus.mute != 1){
+				console.info("Wait MSG");
 				this.textMessage(txt,message,message.text)
 			}else if(this.stateStatus.mute != 1){this.textMessage(txt,message);
 			}else if(txt == "!unmute" && isAdminOrBot(operation.message.from_) && this.stateStatus.mute == 1){
@@ -103,6 +116,8 @@ class LINE extends LineAPI {
         if(operation.type == 13 && this.stateStatus.cancel == 1 && !isAdminOrBot(operation.param2)) {//someone inviting..
             this.cancelAll(operation.param1);
         }
+		
+		if(operation.type == 53 || operation.type == 43 || operation.type == 41 || operation.type == 24 || operation.type == 15 || operation.type == 21){console.info(operation);}
 		
 		if(operation.type == 16 && this.stateStatus.salam == 1){//join group
 			let halo = new Message();
@@ -192,6 +207,7 @@ class LINE extends LineAPI {
 
         if(operation.type == 55){ //ada reader
 
+		    console.info(operation);
             const idx = this.checkReader.findIndex((v) => {
                 if(v.group == operation.param1) {
                     return v
@@ -212,7 +228,7 @@ class LINE extends LineAPI {
         }
 
         if(operation.type == 13) { // diinvite
-            if(isAdminOrBot(operation.param2)) {
+            if(this.stateStatus.autojoin == 1 || isAdminOrBot(operation.param2)) {
                 return this._acceptGroupInvitation(operation.param1);
             } else {
                 return this._cancel(operation.param1,operation.param2);
@@ -468,9 +484,10 @@ class LINE extends LineAPI {
 		const linktxt = textMessages.split('http');
         const txt = textMessages.toLowerCase();
         const messageID = seq.id;
-		const cot = textMessages.split('@');
-		const com = textMessages.split(':');
-		const cox = textMessages.split(' ');
+		const cot = txt.split('@');
+		const com = txt.split(':');
+		const cox = txt.split(' ');
+		//console.info(vx.from);
 		
 		if(vx[1] == "!sendcontact" && seq.from_ == vx[0] && waitMsg == "yes"){
 			let panjang = txt.split("");
@@ -576,7 +593,10 @@ class LINE extends LineAPI {
 				    this._client.sendMessage(0, bang);
 				}vx[4] = "";
 			}else{
-				this._sendMessage(seq,"# How to !addcontact\n-Kirim Contact Orang Yang Mau Di Add\n-Kirim Mid Orang Yang Mau Di Add\n-Atau Tag Orang Yang Mau Di Add");
+				let bang = new Message();
+				bang.to = seq.to;
+				bang.text = "# How to !addcontact\n-Kirim Contact Orang Yang Mau Di Add\n-Kirim Mid Orang Yang Mau Di Add\n-Atau Tag Orang Yang Mau Di Add";
+				this._client.sendMessage(0,bang);
 			}
 		}
 		if(txt == "!addcontact" && isAdminOrBot(seq.from_)){
@@ -616,7 +636,10 @@ class LINE extends LineAPI {
 				cekid.text = JSON.stringify(pment).replace(/"/g , "");
 				this._client.sendMessage(0, cekid);
 			}else{
-				this._sendMessage(seq,"# How to !cekid\nTag orangnya / kirim kontak yang mau di-cek idnya !");
+				let bang = new Message();
+				bang.to = seq.to;
+				bang.text = "# How to !cekid\nTag orangnya / kirim kontak yang mau di-cek idnya !";
+				this._client.sendMessage(0,bang);
 			}
 		}
 		if(txt == "!cekid" && !isBanned(banList, seq.from_)){
@@ -643,13 +666,18 @@ class LINE extends LineAPI {
 				let bang = new Message();
 				bang.to = seq.to;
 				
-				let orangnya = await this._getContacts([midnya]);
+				let orangnya = await this._getContacts([midnya]);let vp,xvp;
+				if(orangnya[0].videoProfile !== null && orangnya[0].videoProfile !== undefined){
+					vp = orangnya[0].videoProfile.tids.mp4;
+					xvp = "\n#Video Profile: \nhttp://dl.profile.line.naver.jp"+orangnya[0].picturePath+"/"+vp;
+				}else{xvp='';}
 				let ress = timeline_post.result;
 				bang.text = 
 "\n#Nama: "+orangnya[0].displayName+"\n\
 \n#ID: \n"+orangnya[0].mid+"\n\
 \n#Profile Picture: \nhttp://dl.profile.line.naver.jp"+orangnya[0].picturePath+"\n\
 \n#Cover Picture: \nhttp://dl.profile.line-cdn.net/myhome/c/download.nhn?userid="+orangnya[0].mid+"&oid="+ress.homeInfo.objectId+"\n\
+"+xvp+"\n\
 \n#Status: \n"+orangnya[0].statusMessage+"\n\
 \n\n\n \n\
 ====================\n\
@@ -664,13 +692,18 @@ class LINE extends LineAPI {
 			    let xment = JSON.parse(ment);let pment = xment.MENTIONEES[0].M;
 				let timeline_post = await this._getHome(pment,config.chanToken);
 				
-				let orangnya = await this._getContacts([pment]);
+				let orangnya = await this._getContacts([pment]);let vp,xvp;
+				if(orangnya[0].videoProfile !== null && orangnya[0].videoProfile !== undefined){
+					vp = orangnya[0].videoProfile.tids.mp4;
+					xvp = "\n#Video Profile: \nhttp://dl.profile.line.naver.jp"+orangnya[0].picturePath+"/"+vp;
+				}else{xvp='';}
 				let ress = timeline_post.result;
 				bang.text = 
 "\n#Nama: "+orangnya[0].displayName+"\n\
 \n#ID: \n"+orangnya[0].mid+"\n\
 \n#Profile Picture: \nhttp://dl.profile.line.naver.jp"+orangnya[0].picturePath+"\n\
 \n#Cover Picture: \nhttp://dl.profile.line-cdn.net/myhome/c/download.nhn?userid="+orangnya[0].mid+"&oid="+ress.homeInfo.objectId+"\n\
+"+xvp+"\n\
 \n#Status: \n"+orangnya[0].statusMessage+"\n\
 \n\n\n \n\
 ====================\n\
@@ -679,13 +712,18 @@ class LINE extends LineAPI {
 				this._client.sendMessage(0,bang);
 			}else if(vx[2] == "arg1" && panjang.length > 30 && panjang[0] == "u"){
 				let timeline_post = await this._getHome(txt,config.chanToken);
-				let orangnya = await this._getContacts([txt]);
+				let orangnya = await this._getContacts([txt]);let vp,xvp;
+				if(orangnya[0].videoProfile !== null && orangnya[0].videoProfile !== undefined){
+					vp = orangnya[0].videoProfile.tids.mp4;
+					xvp = "\n#Video Profile: \nhttp://dl.profile.line.naver.jp"+orangnya[0].picturePath+"/"+vp;
+				}else{xvp='';}
 				let ress = timeline_post.result;
 				seq.text = 
 "\n#Nama: "+orangnya[0].displayName+"\n\
 \n#ID: \n"+orangnya[0].mid+"\n\
 \n#Profile Picture: \nhttp://dl.profile.line.naver.jp"+orangnya[0].picturePath+"\n\
 \n#Cover Picture: \nhttp://dl.profile.line-cdn.net/myhome/c/download.nhn?userid="+orangnya[0].mid+"&oid="+ress.homeInfo.objectId+"\n\
+"+xvp+"\n\
 \n#Status: \n"+orangnya[0].statusMessage+"\n\
 \n\n\n \n\
 ====================\n\
@@ -694,7 +732,10 @@ class LINE extends LineAPI {
 vx[0] = "";vx[1] = "";waitMsg = "no";vx[2] = "";vx[3] = "";
 				this._sendMessage(seq,seq.text);
 			}else{
-				this._sendMessage(seq,"# How to !kepo\nTag orangnya / kirim kontak / kirim mid yang mau dikepoin !");
+				let bang = new Message();
+				bang.to = seq.to;
+				bang.text = "# How to !kepo\nTag orangnya / kirim kontak / kirim mid yang mau dikepoin !";
+				this._client.sendMessage(0,bang);
 			}
 		}
 		if(txt == "!kepo" && !isBanned(banList, seq.from_)){
@@ -709,6 +750,7 @@ vx[0] = "";vx[1] = "";waitMsg = "no";vx[2] = "";vx[3] = "";
 		}else if(txt == '!kepo' && isBanned(banList, seq.from_)){this._sendMessage(seq,"Not permitted !");}
 		
 		if(vx[1] == "!msg" && seq.from_ == vx[0] && waitMsg == "yes"){
+			//vx[0] = "";vx[1] = "";waitMsg = "no";vx[2] = "";vx[3] = "";
 			let panjang = txt.split("");
 			if(txt == "cancel"){
 				vx[0] = "";vx[1] = "";waitMsg = "no";vx[2] = "";vx[3] = "";
@@ -752,7 +794,10 @@ vx[0] = "";vx[1] = "";waitMsg = "no";vx[2] = "";vx[3] = "";
 				this._client.sendMessage(0, kirim);
 				this._client.sendMessage(0, bang);
 			}else{
-				this._sendMessage(seq,"# How to !msg\nTag / Kirim Kontak / Kirim Mid orang yang mau dikirimkan pesan !");
+				let bang = new Message();
+				bang.to = seq.to;
+				bang.text = "# How to !msg\nTag / Kirim Kontak / Kirim Mid orang yang mau dikirimkan pesan !";
+				this._client.sendMessage(0,bang);
 			}
 		}if(txt == "!msg" && !isBanned(banList, seq.from_)){
 			if(vx[2] == null || typeof vx[2] === "undefined" || !vx[2]){
@@ -1002,24 +1047,43 @@ Link Download: "+idU.id+"\n";
 			let { mid, displayName } = await this._client.getProfile();
             this._sendMessage(seq, 'Hai, disini '+displayName);
         }
-
+		
+		if(cox[0] == "broadcast" && isAdminOrBot(seq.from_) && cox[1]){
+            let listMID = [];
+            let bcText = textMessages.split(" ").slice(1).toString().replace(/,/g , " ");
+            let bcm = new Message();
+            bcm.toType = 0;
+            let listContacts = await this._client.getAllContactIds();listMID.push(listContacts);
+	        let listGroups = await this._client.getGroupIdsJoined();listMID.push(listGroups);
+			for(var i = 0; i < listMID.length; i++){
+		        for(var xi = 0; xi <listMID[i].length; xi++){
+		        	bcm.to = listMID[i][xi];
+                    let midc = listMID[i][xi].split("");
+                    if(midc[0] == "u"){bcm.toType = 0;}else if(midc[0] == "c"){bcm.toType = 2;}else if(midc[0] == "r"){bcm.toType = 1;}else{bcm.toType = 0;}
+                    bcm.text = bcText;
+                    this._client.sendMessage(0, bcm);
+	        	}
+            }
+        }else if(cox[0] == "broadcast" && isAdminOrBot(seq.from_) && !cox[1]){this._sendMessage(seq,"# How to broadcast:\nbroadcast yourtexthere");}else if(cox[0] == "broadcast" && !isAdminOrBot(seq.from_)){this._sendMessage(seq,"Not permitted!");}
+		
 		if(txt == "!kickme" && seq.toType == 2 && !isBanned(banList, seq.from_) && this.stateStatus.kick == 1){
 			this._sendMessage(seq,"Ok bang !");
 			this._kickMember(seq.to,[seq.from_]);
 		}else if(txt == '!kickme' && isBanned(banList, seq.from_)){this._sendMessage(seq,"Not permitted !");}
 		
         if(txt == '!speed' && !isBanned(banList, seq.from_)) {
-            const curTime = Math.floor(Date.now() / 1000);
-            //this._sendMessage(seq,'processing....');
-            const rtime = Math.floor(Date.now() / 1000) - curTime;
-            this._sendMessage(seq, `${rtime} second`);
+			const curTime = Math.floor(Date.now() / 1000);let M = new Message();M.to=seq.to;M.text = '';M.contentType = 1;M.contentPreview = null;M.contentMetadata = null;
+			await this._client.sendMessage(0,M);
+			const rtime = Math.floor(Date.now() / 1000);
+            const xtime = rtime	- curTime;
+            this._sendMessage(seq, xtime+' second');
         }else if(txt == '!speed' && isBanned(banList, seq.from_)){this._sendMessage(seq,"Not permitted !");}
 
-        /*if(txt === 'kernel') {
+        if(txt === 'kernel') {
             exec('uname -a;ptime;id;whoami',(err, sto) => {
                 this._sendMessage(seq, sto);
             })
-        }*/
+        }
 
         if(txt === '!kickall' && this.stateStatus.kick == 1 && isAdminOrBot(seq.from_) && seq.toType == 2) {
             let { listMember } = await this.searchGroup(seq.to);
@@ -1029,8 +1093,7 @@ Link Download: "+idU.id+"\n";
                 }
             }
         }else if(txt === '!kickall' && !isAdminOrBot(seq.from_) && seq.toType == 2){this._sendMessage(seq,"Not permitted !");}
-		
-		if(txt == '!key') {
+				if(txt == '!key') {
 			let botOwner = await this._client.getContacts([myBot[0]]);
             let { mid, displayName } = await this._client.getProfile();
 			let key2 = "\n\
@@ -1050,8 +1113,10 @@ Link Download: "+idU.id+"\n";
                 if(listMember[i].mid==param){
 					let namanya = listMember[i].dn;
 					seq.text = 'Halo @'+namanya+', Selamat datang bro ! Salam Kenal ^_^';
+					console.info(namanya);
 					let midnya = listMember[i].mid;
 					let kata = seq.text.split("@").slice(0,1);
+					console.info(kata);
 					let kata2 = kata[0].split("");
 					let panjang = kata2.length;
                     let member = [namanya];
@@ -1090,8 +1155,10 @@ Link Download: "+idU.id+"\n";
                 if(listMember[i].mid==param){
 					let namanya = listMember[i].dn;
 					seq.text = 'Goodbye ! @'+namanya;
+					console.info(namanya);
 					let midnya = listMember[i].mid;
 					let kata = seq.text.split("@").slice(0,1);
+					console.info(kata);
 					let kata2 = kata[0].split("");
 					let panjang = kata2.length;
                     let member = [namanya];
@@ -1111,31 +1178,53 @@ Link Download: "+idU.id+"\n";
             }
         }
 
-        /*if(txt == 'setpoint') {
+        if(txt == 'setpoint') {
             this._sendMessage(seq, `Setpoint for check reader.`);
             this.removeReaderByGroup(seq.to);
-        }*/
+        }
 
-        /*if(txt == 'clear') {
+        if(txt == 'clear') {
             this.checkReader = []
             this._sendMessage(seq, `Remove all check reader on memory`);
-        }  */
+        }  
 
-        /*if(txt == 'recheck'){
+        if(txt == 'recheck'){
             let rec = await this.recheck(this.checkReader,seq.to);
             const mentions = await this.mention(rec);
             seq.contentMetadata = mentions.cmddata;
             await this._sendMessage(seq,mentions.names.join(''));
             
-        }*/
+        }
 
-        /*if(txt == 'setpoint for check reader .') {
+        if(txt == 'setpoint for check reader .') {
             this.searchReader(seq);
-        }*/
+        }
 
-        /*if(txt == 'clearall') {
+        if(txt == 'clearall') {
             this.checkReader = [];
-        }*/
+        }
+		
+		if(txt == '!botcontact'){
+			let probot = await this._client.getProfile();
+			let settings = await this._client.getSettings();
+			let emailbot = settings.identityIdentifier;
+			let M = new Message();M.to = seq.to;
+			M.text = 'Bot Name: '+probot.displayName+'\nBot LINE_ID: line://ti/p/'+probot.userid+'\nBot CONTACT_TICKET: http://line.me/ti/p/'+settings.contactMyTicket+'\nBot Email: hidden for some reason ^_^';
+			this._client.sendMessage(0,M);
+		}
+		
+		if(cox[0] == "getimage" && cox[1] && !isBanned(banList,seq.from_)){//getimage http://url.com/image.png
+			var that = this;
+			let url = cox[1].split("/");let extF = '';let extA = url[url.length-1].split(".");extF = extA[extA.length-1];
+	        if(isTGet(extF,"?")){let pext = extF.split("?");extF = pext[0];}
+			if(isImg(extF)){
+			await this._dlImg(cox[1], __dirname+"/img."+extF,function(){if(extF == "webp"){webp.dwebp(__dirname+"/img."+extF,__dirname+"/img.png","-o",function(){that._sendImageWithURL(seq.to,cox[1],"png");});}else{that._sendImageWithURL(seq.to,cox[1],extF)}});
+		    }else{let aM = new Message();aM.to = to;aM.text = "Gagal, ekstensi file tidak diperbolehkan !";this._client.sendMessage(0,aM);}
+		}else if(cox[0] == "getimage" && cox[1] && isBanned(banList,seq.from_)){this._sendMessage(seq,"Not permitted!");}else if(cox[0] == "getimage" && !cox[1] && !isBanned(banList,seq.from_)){this._sendMessage(seq,"# How to getimage:\ngetimage http://url.com/image.png");}
+		
+		if(cox[0] == "album" && isAdminOrBot(seq.from_)){
+			await this._createAlbum(seq.to,cox[1],config.chanToken);
+		}
 		
 		if(txt == "!kickban" && isAdminOrBot(seq.from_)){
 			for(var i = 0; i < banList.length; i++){
@@ -1158,23 +1247,29 @@ Link Download: "+idU.id+"\n";
         if(txt == '!myid' /*|| txt == 'mid' || txt == 'id'*/) {
             this._sendMessage(seq,"ID Kamu: "+seq.from_);
         }
-
-       /* if(txt == 'speedtest' && isAdminOrBot(seq.from)) {
-            exec('speedtest-cli --server 6581',(err, res) => {
-                    this._sendMessage(seq,res)
-            })
-        }*/
+		
+		if(txt == "!whattime" && !isBanned(banList,seq.from_)){
+			let d = new Date();let xmenit = d.getMinutes().toString().split("");console.info(xmenit.length);
+			if(xmenit.length < 2){
+				this._sendMessage(seq, d.getHours()+":0"+d.getMinutes());
+			}else{
+				this._sendMessage(seq, d.getHours()+":"+d.getMinutes());
+			}
+		}
 		
 		if(txt == '!ginfo' && !isBanned(banList, seq.from_)) {
-            let groupInfo = await this._client.getGroup(seq.to);let gqr = 'open';
+            let groupInfo = await this._client.getGroup(seq.to);let gqr = 'open';let ticketg = 'line://ti/g/';
 			let createdT64 = groupInfo.createdTime.toString().split(" ");
 			let createdTime = await this._getServerTime(createdT64[0]);
 			let gid = seq.to;
+			let gticket = groupInfo.groupPreference.invitationTicket;
+			if(!gticket){ticketg = "CLOSED";}else{ticketg += gticket;}
 			let gname = groupInfo.name;
 			let memberCount = groupInfo.members.length;
 			let gcreator = groupInfo.creator.displayName;
 			let pendingCount = 0;
 			if(groupInfo.invitee !== null){
+				//console.info("pendingExist");
 				pendingCount = groupInfo.invitee.length;
 			}
 			let gcover = groupInfo.pictureStatus;
@@ -1189,6 +1284,7 @@ Link Download: "+idU.id+"\n";
 \n# Group ID:\n"+gid+"\n\
 \n# Group Creator:\n"+gcreator+"\n\
 \n# Group CreatedTime:\n"+createdTime+"\n\
+\n# Group Ticket:\n"+ticketg+"\n\
 \n# Member: "+memberCount+"\n\
 \n# Pending: "+pendingCount+"\n\
 \n# QR: "+gqr+"\n\
@@ -1199,7 +1295,7 @@ Link Download: "+idU.id+"\n";
         const joinByUrl = ['!gurl'];
         if(joinByUrl.includes(txt)) {
             this._sendMessage(seq,`Updating group ...`);
-            let updateGroup = await this._getGroup(seq.to);
+            let updateGroup = await this._getGroup(seq.to);console.info(updateGroup);
             if(updateGroup.preventJoinByTicket === true) {
                 updateGroup.preventJoinByTicket = false;
 				await this._updateGroup(updateGroup);
@@ -1232,8 +1328,8 @@ Link Download: "+idU.id+"\n";
 		
 		if(gTicket[0] == "!join" && isAdminOrBot(seq.from_)){
 			let sudah = "no";
-			let grp = await this._client.findGroupByTicket(gTicket[1]);
-			let lGroup = await this._client.getGroupIdsJoined();
+			let grp = await this._client.findGroupByTicket(gTicket[1]);console.info(grp);
+			let lGroup = await this._client.getGroupIdsJoined();console.info(lGroup);
 			for(var i = 0; i < lGroup.length; i++){
 				if(grp.id == lGroup[i]){
 					sudah = "ya";
@@ -1247,7 +1343,7 @@ Link Download: "+idU.id+"\n";
 			}
 		}
 
-        /*if(cmd === 'ip') {
+        if(cmd === 'ip') {
             exec(`curl ipinfo.io/${payload}`,(err, res) => {
                 const result = JSON.parse(res);
                 if(typeof result.error == 'undefined') {
@@ -1276,7 +1372,7 @@ Link Download: "+idU.id+"\n";
                     this._sendMessage(seq,'Location Not Found , Maybe di dalem goa');
                 }
             })
-        }*/
+        }
     }
 
 }
