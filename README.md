@@ -4,6 +4,10 @@ Forked version of LineAlphat JS (Selfbot) #DEV #21/10/2017 #21PM
 
 <hr>
 
+Installing Node.js
+------
+- `pkg install nodejs-current` or `yum install nodejs-current`
+
 # require node >= v8.x.x
 check your nodejs version
 `node -v`
