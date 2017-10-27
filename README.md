@@ -23,7 +23,7 @@ How to run bot for the first time ?
 
 IMPORTANT
 ------
-**PLEASE DO `npm i` FOR THIS UPDATE -> #14/10/2017**
+**PLEASE DO `npm i` FOR THIS UPDATE -> #27/10/2017**
 
 Still work :construction_worker:
 ----
