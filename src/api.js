@@ -51,7 +51,7 @@ class LineAPI {
 	}
     this.options = options;
     this.connection =
-      thrift.createHttpConnection(this.config.LINE_DOMAIN_4TH, 443, this.options);
+      thrift.createHttpConnection(this.config.LINE_DOMAIN_TOOFAST, 443, this.options);
     this.connection.on('error', (err) => {
       console.log('err',err);
       return err;
