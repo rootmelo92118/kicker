@@ -10,6 +10,7 @@ const config = {
   LINE_DOMAIN_2ND: 'gd2.line.naver.jp',
   LINE_DOMAIN_3RD: 'gfs.line.naver.jp', 
   LINE_DOMAIN_4TH: 'gfps.line.naver.jp',
+  LINE_KEEP_X: '/r/keep/p/', //https://obs-sg.line-apps.com/r/keep/p/1508751723510tffffffff
   LINE_KEEP: '/kp/api/v21/keep', //Keep -> gfs.line.naver.jp/kp/api/v21/keep/sync.json?revision=0&limit=50&serviceType=1 || fetch.json?startRevision=0&limit=50&serviceType=1
   LINE_OS_URL: 'os.line.naver.jp',
   LINE_HTTP_URL: '/api/v4/TalkService.do',
@@ -36,6 +37,7 @@ const config = {
   LINE_POST_CONTENT_URL_2ND: 'https://obs-sg.line-apps.com/talk/m/upload.nhn',
   X_LINE_APP: 'DESKTOPMAC 10.10.2-YOSEMITE-x64 MAC 4.5.0',
   //X_LINE_APP: 'CHROMEOS	1.4.13	Chrome_OS	1',
+  VGL_KEY: 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJqdGkiOiIyZmRmN2VhMC05YWUzLTAxMzUtMDg1MC0wYTU4NjQ2MDE0MDQiLCJpc3MiOiJnYW1lbG9ja2VyIiwiaWF0IjoxNTA4ODQ3NDMxLCJwdWIiOiJzZW1jIiwidGl0bGUiOiJ2YWluZ2xvcnkiLCJhcHAiOiIyZmRkYjk3MC05YWUzLTAxMzUtMDg0ZS0wYTU4NjQ2MDE0MDQiLCJzY29wZSI6ImNvbW11bml0eSIsImxpbWl0IjoxMH0.OgbSz-XS-DO0xwF445lIWMe0o_DRI7TuVTZRRFXCfis',
   ip: '127.0.0.1',
   version: '0.0.2',
   revision: 0,
@@ -45,6 +47,7 @@ const config = {
   Headers: {
     'User-Agent':'DESKTOP:WIN:10.10.2-YOSEMITE-x64(4.5.0)'
   },
+  FILE_DOWNLOAD_LOCATION: '/../download/',
   YT_DL: 'http://www.saveitoffline.com/process/',
   tokenn: '',
   chanToken: '',
