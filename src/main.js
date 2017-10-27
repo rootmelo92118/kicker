@@ -103,13 +103,11 @@ class LINE extends LineAPI {
 
     poll(operation) {
         if(operation.type == 25 || operation.type == 26) {
-			console.info(operation.message);
             const txt = (operation.message.text !== '' && operation.message.text != null ) ? operation.message.text : '' ;
             let message = new Message(operation.message);
             this.receiverID = message.to = (operation.message.to === myBot[0]) ? operation.message.from_ : operation.message.to ;
             Object.assign(message,{ ct: operation.createdTime.toString() });
             if(waitMsg == "yes" && operation.message.from_ == vx[0] && this.stateStatus.mute != 1){
-				console.info("Wait MSG");
 				this.textMessage(txt,message,message.text)
 			}else if(this.stateStatus.mute != 1){this.textMessage(txt,message);
 			}else if(txt == "!unmute" && isAdminOrBot(operation.message.from_) && this.stateStatus.mute == 1){
@@ -121,8 +119,6 @@ class LINE extends LineAPI {
         if(operation.type == 13 && this.stateStatus.cancel == 1 && !isAdminOrBot(operation.param2)) {//someone inviting..
             this.cancelAll(operation.param1);
         }
-		
-		if(operation.type == 53 || operation.type == 43 || operation.type == 41 || operation.type == 24 || operation.type == 15 || operation.type == 21){console.info(operation);}
 		
 		if(operation.type == 16 && this.stateStatus.salam == 1){//join group
 			let halo = new Message();
@@ -212,7 +208,6 @@ class LINE extends LineAPI {
 
         if(operation.type == 55){ //ada reader
 
-		    console.info(operation);
             const idx = this.checkReader.findIndex((v) => {
                 if(v.group == operation.param1) {
                     return v
@@ -321,7 +316,6 @@ class LINE extends LineAPI {
 			let isinya = "Setting\n";
 			for (var k in this.stateStatus){
                 if (typeof this.stateStatus[k] !== 'function') {
-                    console.info("Key is " + k + ", value is" + this.stateStatus[k]);
 					if(this.stateStatus[k]==1){
 						isinya += " "+firstToUpperCase(k)+" => on\n";
 					}else{
@@ -338,7 +332,6 @@ class LINE extends LineAPI {
 			let isinya = "Setting\n";
 			for (var k in this.stateStatus){
                 if (typeof this.stateStatus[k] !== 'function') {
-                    console.info("Key is " + k + ", value is" + this.stateStatus[k]);
 					if(this.stateStatus[k]==1){
 						isinya += " "+firstToUpperCase(k)+" => on\n";
 					}else{
@@ -430,7 +423,6 @@ class LINE extends LineAPI {
         mid.push(listMember.mid);
         let strings = mentionStrings.join('');
         let member = strings.split('@').slice(1);
-		console.info(member);
         
         let tmp = 0;
         let memberStart = [];
@@ -551,7 +543,6 @@ class LINE extends LineAPI {
 				let bang = new Message();
 				bang.to = seq.to;
 				if(vx[4] == "sudah"){
-					console.info("sudah");
 					bang.text = "Dia sudah masuk friendlist bang, gk bisa ku add lagi !";
 					this._client.sendMessage(0, bang);
 				}else{
@@ -573,7 +564,6 @@ class LINE extends LineAPI {
 				let bang = new Message();
 				bang.to = seq.to;
 				if(vx[4] == "sudah"){
-					console.info("sudah");
 					bang.text = "Dia sudah masuk friendlist bang, gk bisa ku add lagi !";
 					this._client.sendMessage(0, bang);
 				}else{
@@ -594,7 +584,6 @@ class LINE extends LineAPI {
 				let bang = new Message();
 				bang.to = seq.to;
 				if(vx[4] == "sudah"){
-					console.info("sudah");
 					bang.text = "Dia sudah masuk friendlist bang, gk bisa ku add lagi !";
 					this._client.sendMessage(0, bang);
 				}else{
@@ -671,7 +660,7 @@ class LINE extends LineAPI {
 				this._sendMessage(seq,"# CANCELLED");
 			}else if(seq.contentType == 13){
 				vx[0] = "";vx[1] = "";waitMsg = "no";vx[2] = "";vx[3] = "";
-				let midnya = seq.contentMetadata.mid;console.info(midnya);
+				let midnya = seq.contentMetadata.mid;
 				let timeline_post = await this._getHome(midnya,config.chanToken);
 				let bang = new Message();
 				bang.to = seq.to;
@@ -1062,7 +1051,7 @@ Link Download: "+idU.id+"\n";
 				vx[2] = "arg2";vx[3] = seq.id;
 				let hasil;let hasiltxt = "「 Anime Guess 」\n\n";
 				this._download("https://obs-sg.line-apps.com/talk/m/download.nhn?oid="+seq.id+"&tid=original","img",0,(result) => {
-					const filepath = path.resolve(result);console.info(filepath);
+					const filepath = path.resolve(result);
                     //let buffx = fs.readFileSync(filepath);
                     // convert binary data to base64 encoded string
 					//let cmx = new command();
@@ -1118,7 +1107,7 @@ Link Download: "+idU.id+"\n";
 				vx[2] = "arg3";
 				let hasil;let hasiltxt = "「 Anime Guess 」\n\n";
 				this._download("https://obs-sg.line-apps.com/talk/m/download.nhn?oid="+vx[3]+"&tid=original","img",0,(result) => {
-					const filepath = path.resolve(result);console.info(filepath);
+					const filepath = path.resolve(result);
                     //let buffx = fs.readFileSync(filepath);
                     // convert binary data to base64 encoded string
 					//let cmx = new command();
@@ -1174,7 +1163,7 @@ Link Download: "+idU.id+"\n";
 				vx[2] = "arg4";
 				let hasil;let hasiltxt = "「 Anime Guess 」\n\n";
 				this._download("https://obs-sg.line-apps.com/talk/m/download.nhn?oid="+vx[3]+"&tid=original","img",0,(result) => {
-					const filepath = path.resolve(result);console.info(filepath);
+					const filepath = path.resolve(result);
                     //let buffx = fs.readFileSync(filepath);
                     // convert binary data to base64 encoded string
 					//let cmx = new command();
@@ -1229,7 +1218,7 @@ Link Download: "+idU.id+"\n";
 			} else if(vx[2] == "arg4" && txt == "page4"){
 				let hasil;let hasiltxt = "「 Anime Guess 」\n\n";
 				this._download("https://obs-sg.line-apps.com/talk/m/download.nhn?oid="+vx[3]+"&tid=original","img",0,(result) => {
-					const filepath = path.resolve(result);console.info(filepath);
+					const filepath = path.resolve(result);
                     //let buffx = fs.readFileSync(filepath);
                     // convert binary data to base64 encoded string
 					//let cmx = new command();
@@ -1730,10 +1719,8 @@ Link Download: "+idU.id+"\n";
                 if(listMember[i].mid==param){
 					let namanya = listMember[i].dn;
 					seq.text = 'Halo @'+namanya+', Selamat datang bro ! Salam Kenal ^_^';
-					console.info(namanya);
 					let midnya = listMember[i].mid;
 					let kata = seq.text.split("@").slice(0,1);
-					console.info(kata);
 					let kata2 = kata[0].split("");
 					let panjang = kata2.length;
                     let member = [namanya];
@@ -1772,10 +1759,8 @@ Link Download: "+idU.id+"\n";
                 if(listMember[i].mid==param){
 					let namanya = listMember[i].dn;
 					seq.text = 'Goodbye ! @'+namanya;
-					console.info(namanya);
 					let midnya = listMember[i].mid;
 					let kata = seq.text.split("@").slice(0,1);
-					console.info(kata);
 					let kata2 = kata[0].split("");
 					let panjang = kata2.length;
                     let member = [namanya];
@@ -1820,45 +1805,6 @@ Link Download: "+idU.id+"\n";
         if(txt == 'clearall') {
             this.checkReader = [];
         }
-		
-		if(txt == "tess"){
-			this._vaingloryPlayerMatch(['GoogleX'],'sg',(res) => {
-				console.info(JSON.stringify(res));
-			});
-			//let bot = await this._client.getProfile();
-			/*let headerx = {
-				'User-Agent':'DESKTOP:WIN:10.10.2-YOSEMITE-x64(4.5.0)',
-				'X-Line-Access':config.tokenn,
-				"X-Line-Mid": bot.mid,
-                "x-lct": config.chanToken
-			}*/
-			//this.getJson(config.LINE_RS,headerx).then((res) => (res.error ? console.log('err',res.error) : console.log(res)));
-			//console.info(await this._client.getProfile());
-			//console.info(await this._client.getSettings());
-			//let timeline_post = await this._getPost(this.limitposts,config.chanToken);
-			//let album_res = await this._getAlbum(seq.to,config.chanToken);
-			//console.info(await this._client.getRoom(seq.to));
-			//await this._sendImage(seq.to,'logo.png');
-			//console.info(await this.getJson("/tl/mapi/v21/activities?postLimit=1"));
-			//console.info(await this._client.createSession());
-			//console.info(await this._client.getProfile());
-			///console.info(await this._client.getSessions());
-			//console.info(await this._client.getLastOpRevision());
-			///console.info(await this._client.getLastAnnouncementIndex());
-			//console.info(await this._client.getIdentityIdentifier()); //email
-			//console.info(await this._client.getCompactGroup(seq.to)); //sama kayak get groups
-			//console.info(album_res);
-			//console.info(album_res.result.feeds[0].post.comments[0].contentsList);
-			//console.info(album_res.result.feeds[0].post);
-			//console.info(album_res.result.items[0]);
-			//let ress = album_res.result.items[0].id;
-			//await this._insertAlbum(seq.to,ress,config.chanToken,__dirname+"/img.jpg");
-			//let ax = new Message();
-			//ax.text = "a";
-			//console.info(await this._client.sendMessageToMyHome(0, ax));//kayak pesan status, tapi gk update
-			//console.info(await this._client.acquireEncryptedAccessToken());
-			///console.info(await this._client.updateNotificationToken());
-		}
 		
 		if(txt == '!botcontact'){
 			let probot = await this._client.getProfile();
@@ -1911,7 +1857,7 @@ Link Download: "+idU.id+"\n";
         }
 		
 		if(txt == "!whattime" && !isBanned(banList,seq.from_)){
-			let d = new Date();let xmenit = d.getMinutes().toString().split("");console.info(xmenit.length);
+			let d = new Date();let xmenit = d.getMinutes().toString().split("");
 			if(xmenit.length < 2){
 				this._sendMessage(seq, d.getHours()+":0"+d.getMinutes());
 			}else{
@@ -1957,7 +1903,7 @@ Link Download: "+idU.id+"\n";
         const joinByUrl = ['!gurl'];
         if(joinByUrl.includes(txt)) {
             this._sendMessage(seq,`Updating group ...`);
-            let updateGroup = await this._getGroup(seq.to);console.info(updateGroup);
+            let updateGroup = await this._getGroup(seq.to);
             if(updateGroup.preventJoinByTicket === true) {
                 updateGroup.preventJoinByTicket = false;
 				await this._updateGroup(updateGroup);
@@ -1990,8 +1936,8 @@ Link Download: "+idU.id+"\n";
 		
 		if(gTicket[0] == "!join" && isAdminOrBot(seq.from_)){
 			let sudah = "no";
-			let grp = await this._client.findGroupByTicket(gTicket[1]);console.info(grp);
-			let lGroup = await this._client.getGroupIdsJoined();console.info(lGroup);
+			let grp = await this._client.findGroupByTicket(gTicket[1]);
+			let lGroup = await this._client.getGroupIdsJoined();
 			for(var i = 0; i < lGroup.length; i++){
 				if(grp.id == lGroup[i]){
 					sudah = "ya";
