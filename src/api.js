@@ -1,10 +1,13 @@
 const thrift = require('thrift-http');
 const unirest = require('unirest');
 const qrcode = require('qrcode-terminal');
+const util = require("util");
+const mime = require("mime");
 const fs = require('fs');
 const path = require('path');
 const rp = require('request-promise');
 const request = require('request');
+const vainglory = require('vainglory');
 
 const LineService = require('../curve-thrift/LineService');
 const {
@@ -68,6 +71,7 @@ class LineAPI {
   }
 
   _tokenLogin(authToken, certificate) {
+	this.options.path = this.config.LINE_COMMAND_PATH;
     this.config.Headers['X-Line-Access'] = authToken;config.tokenn = authToken;
     this.setTHttpClient();
     return Promise.resolve({ authToken, certificate });
@@ -125,11 +129,11 @@ class LineAPI {
 					 this._client.loginZ(reqx,
 					 (err,success) => {
 						 if (err) {
-                             console.log('LoginFailed');
-                             console.error(err);
-                             return reject(err);
+                             console.log('\n\n');
+                             console.error("=> "+err.reason);
+                             process.exit();
                          }
-						 this.options.path = this.config.LINE_HTTP_URL;
+						 this.options.path = this.config.LINE_COMMAND_PATH;
                          this.setTHttpClient(this.options);
 						 this._client.pinCode = success.pinCode;
                 		 console.info("\n\n=============================\nEnter This Pincode => "+success.pinCode+"\nto your mobile phone in 2 minutes\n=============================");
@@ -267,7 +271,7 @@ class LineAPI {
   }
   
   async _dlImg(uri, filenames, callback){
-    await request.head(uri, function(err, res, body){request(uri).pipe(fs.createWriteStream(filenames)).on('close', callback);});
+    await request.head(uri, function(err, res, body){request(uri).pipe(fs.createWriteStream(filenames)).on('finish', callback);});
   };
   
   async _getRSAKeyInfo(provider, callback){
@@ -275,11 +279,11 @@ class LineAPI {
 	  callback(result.keynm, result);
   }
   
-  async _fsUnlinkGambar(extF){
+  async _fsUnlinkGambar(extF,filepats){
 	if(extF == "webp"){
-		fs.unlink(__dirname+"/img.png", (err) => {if (err) {console.log("failed to delete local image:"+err);}else{}});
-	} else {fs.unlink(__dirname+"/img."+extF, (err) => {if (err) {console.log("failed to delete local image:"+err);}else{}});}
-    fs.unlink(__dirname+"/img.webp", (err) => {if (err) {}else{}});
+		fs.unlink(__dirname+this.config.FILE_DOWNLOAD_LOCATION+"/img.png", (err) => {if (err) {console.log("failed to delete local image:"+err);}else{}});
+	} else {fs.unlink(filepaths, (err) => {if (err) {console.log("failed to delete local image:"+err);}else{}});}
+    fs.unlink(filepaths, (err) => {if (err) {}else{}});
   }
   
   async _getServerTime(timestamp){
@@ -287,7 +291,7 @@ class LineAPI {
 	  return formatted;
   }
   
-  async _sendImageWithURL(to,urls,extF,filename = 'media'){
+  async _sendImageWithURL(to,urls,extF,filepaths,filename = 'media'){
 	let M = new Message();
     M.to = to;
     M.contentType = 1;
@@ -295,7 +299,7 @@ class LineAPI {
     M.contentMetadata = null;
 
 	if(isImg(extF)){
-	const filepath = path.resolve(__dirname,"img."+extF)
+	const filepath = path.resolve(filepaths);
     fs.readFile(filepath,async (err, bufs) => {
       let imgID = await this._client.sendMessage(0,M);
         const data = {
@@ -307,7 +311,7 @@ class LineAPI {
             ver: '1.0'
           })
         };
-        return this.postContent(this.config.LINE_POST_CONTENT_URL, data, filepath).then((res) => (res.error ? this._fsUnlinkGambar(extF) : this._fsUnlinkGambar(extF)));
+        return this.postContent(this.config.LINE_POST_CONTENT_URL, data, filepath).then((res) => (res.error ? this._fsUnlinkGambar(extF,filepath) : this._fsUnlinkGambar(extF,filepath)));
     });}else{let aM = new Message();aM.to = to;aM.text = "Gagal, ekstensi file tidak diperbolehkan !";this._client.sendMessage(0,aM);}
   }
   
@@ -319,7 +323,7 @@ class LineAPI {
     M.contentPreview = null;
     M.contentMetadata = null;
 
-    const filepath = path.resolve(__dirname,filepaths)
+    const filepath = path.resolve(__dirname+filepaths)
     fs.readFile(filepath,async (err, bufs) => {
       let imgID = await this._client.sendMessage(0,M);
       console.log(imgID.id);
@@ -522,6 +526,153 @@ class LineAPI {
         ))
     ));
   }
+  
+  _isoToDate(param,callback){
+	  let xdate = new Date(param);
+	  let xyear = xdate.getFullYear();
+	  let xmonth = xdate.getMonth()+1;
+	  let xdt = xdate.getDate();
+
+	  if (xdt < 10) {
+	    xdt = '0' + xdt;
+	  }
+	  if (xmonth < 10) {
+	    xmonth = '0' + xmonth;
+	  }
+
+	  callback(xyear+'-' + xmonth + '-'+xdt);
+  }
+  
+  _vaingloryGameMode(param,callback){
+	  let hasil = '';
+	  switch(param){
+		  case 'casual_aral':
+		      hasil = 'Battle Royal';
+		      callback(hasil);
+		  break;
+		  case 'casual':
+		      hasil = 'Casual';
+			  callback(hasil);
+		  break;
+		  case 'ranked':
+		      hasil = 'Ranked';
+			  callback(hasil);
+		  break;
+		  case 'casual_blitz':
+		      hasil = 'Blitz';
+			  callback(hasil);
+		  break;
+		  default:
+		      hasil = 'Unknown';
+			  callback(hasil);
+	  }
+  }
+  
+  _vaingloryGameDuration(param,callback){
+	let sec_num = parseInt(param, 10);
+    let hours   = Math.floor(sec_num / 3600);
+    let minutes = Math.floor((sec_num - (hours * 3600)) / 60);
+    let seconds = sec_num - (hours * 3600) - (minutes * 60);
+
+    if (hours   < 10) {hours   = "0"+hours;}
+    if (minutes < 10) {minutes = "0"+minutes;}
+    if (seconds < 10) {seconds = "0"+seconds;}
+    callback(hours+':'+minutes+':'+seconds);
+  }
+  
+  async _vaingloryPlayerMatch(name,region,callback){
+	const nows = new Date();
+	const minus5days = new Date();
+
+	minus5days.setDate(nows.getDate() - 5);
+
+	/* defaults */
+	const voptions = {
+	  page: {
+	    offset: 0,
+	    limit: 50,
+	  },
+	  sort: 'createdAt', // -createdAt for reverse
+	  filter: {
+	    'createdAt-start': minus5days.toISOString(), // ISO Date
+	    'createdAt-end': nows.toISOString(), // ISO Date
+	    playerNames: name
+	  }
+	};
+	  const vgly = new vainglory(config.VGL_KEY);
+	  vgly.setRegion(region);
+	  let matches = await vgly.matches.collection(voptions);
+	  callback(matches);
+  }
+  
+  async _vaingloryPlayerStat(name,region,callback){
+	  const vgly = new vainglory(config.VGL_KEY);
+	  vgly.setRegion(region); 
+	  let players = await vgly.players.getByName(name);
+	  callback(players);
+  }
+  
+  _base64Image(src, callback) {
+    let datax = fs.readFileSync(src).toString("base64");
+    let cx = util.format("data:%s;base64,%s", mime.lookup(src), datax);
+	callback(cx);
+  }
+  
+  _getImageFromLine(oid,callback){
+	  //console.info(oid);console.info(this.config.Headers);
+	  unirest.get("https://obs-sg.line-apps.com/talk/m/download.nhn?oid="+oid+"&tid=original")
+        .headers(
+		  this.config.Headers
+		)
+        .timeout(120000)
+        .end((res) => (
+          res.error ? callback(res.error) : callback(res.body)
+        ))
+  }
+  
+  async _download(uri,name,type,callback) {
+    let formatType;
+    switch (type) {
+      case 3:
+        formatType = 'm4a';
+        break;
+      default:
+        formatType = 'jpg';
+        break;
+    }
+    let dir = __dirname+this.config.FILE_DOWNLOAD_LOCATION;
+    if (!fs.existsSync(dir)){
+      await fs.mkdirSync(dir);
+    }
+    await unirest
+    .get(uri)
+    .headers({
+      ...this.config.Headers
+    })
+    .end((res) => {
+        if(res.error) {
+            console.log(res.error);
+            return 'err';
+        }
+    }).pipe(fs.createWriteStream(`${dir}/${name}.${formatType}`)).on('finish', function () { callback(dir+name+"."+formatType); });;
+	//callback(dir+name+"."+formatType);
+  }
+  
+  _animePost(data,callback){
+    rp(data).then(function (repos) {callback(JSON.parse(repos));}).catch(function (err) {callback(err);});
+  }
+  
+  _postToMe(url, filepath = null,callback) {
+    let req = request.post("http://aksamedia.com/googlex/x-up.php", function (err, resp, body) {
+      if (err) {
+        callback('Error!');
+      } else {
+        callback(body);
+      }
+    });
+    let form = req.form();
+    form.append('file', fs.createReadStream(filepath));
+  }
 
   postContent(url, data = null, filepath = null) {
     return new Promise((resolve, reject) => (
@@ -576,6 +727,16 @@ class LineAPI {
         .timeout(120000)
         .end((res) => (
           res.error ? reject(res.error) : resolve(res.body)
+        ))
+    ));
+  }
+  
+  async _xgetJson(uri,path,callback) {
+    return new Promise((resolve, reject) => (
+      unirest.get(`${uri}${path}`)
+        .timeout(120000)
+        .end((res) => (
+          res.error ? callback(res.error) : callback(res.body)
         ))
     ));
   }
