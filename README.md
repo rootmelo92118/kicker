@@ -29,8 +29,8 @@ Still work :construction_worker:
 ----
 **CHANGELOG**
 - Bug fixed
-- Add more keyword
-- New feature: vainglory statistic and match detail
+- Remove vainglory feature
+- New feature: anime search by image
 
 **TO - DO**
 - Add keyword for (Send Image & Broadcast)
