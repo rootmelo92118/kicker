@@ -7,7 +7,6 @@ const fs = require('fs');
 const path = require('path');
 const rp = require('request-promise');
 const request = require('request');
-const vainglory = require('vainglory');
 
 const LineService = require('../curve-thrift/LineService');
 const {
@@ -26,6 +25,15 @@ var moment = require('moment');
 
 function isImg(param) {
     return imgArr.includes(param);
+}
+
+function ambilKata(params, kata1, kata2){
+    if(params.indexOf(kata1) === false) return false;
+    if(params.indexOf(kata2) === false) return false;
+    let start = params.indexOf(kata1) + kata1.length;
+    let end = params.indexOf(kata2, start);
+    let returns = params.substr(start, end - start);
+    return returns;
 }
 
 class LineAPI {
@@ -73,7 +81,7 @@ class LineAPI {
   _tokenLogin(authToken, certificate) {
 	this.options.path = this.config.LINE_COMMAND_PATH;
     this.config.Headers['X-Line-Access'] = authToken;config.tokenn = authToken;
-    this.setTHttpClient();
+    this.setTHttpClient(this.options);
     return Promise.resolve({ authToken, certificate });
   }
 
@@ -543,76 +551,7 @@ class LineAPI {
 	  callback(xyear+'-' + xmonth + '-'+xdt);
   }
   
-  _vaingloryGameMode(param,callback){
-	  let hasil = '';
-	  switch(param){
-		  case 'casual_aral':
-		      hasil = 'Battle Royal';
-		      callback(hasil);
-		  break;
-		  case 'casual':
-		      hasil = 'Casual';
-			  callback(hasil);
-		  break;
-		  case 'ranked':
-		      hasil = 'Ranked';
-			  callback(hasil);
-		  break;
-		  case 'casual_blitz':
-		      hasil = 'Blitz';
-			  callback(hasil);
-		  break;
-		  default:
-		      hasil = 'Unknown';
-			  callback(hasil);
-	  }
-  }
-  
-  _vaingloryGameDuration(param,callback){
-	let sec_num = parseInt(param, 10);
-    let hours   = Math.floor(sec_num / 3600);
-    let minutes = Math.floor((sec_num - (hours * 3600)) / 60);
-    let seconds = sec_num - (hours * 3600) - (minutes * 60);
-
-    if (hours   < 10) {hours   = "0"+hours;}
-    if (minutes < 10) {minutes = "0"+minutes;}
-    if (seconds < 10) {seconds = "0"+seconds;}
-    callback(hours+':'+minutes+':'+seconds);
-  }
-  
-  async _vaingloryPlayerMatch(name,region,callback){
-	const nows = new Date();
-	const minus5days = new Date();
-
-	minus5days.setDate(nows.getDate() - 5);
-
-	/* defaults */
-	const voptions = {
-	  page: {
-	    offset: 0,
-	    limit: 50,
-	  },
-	  sort: 'createdAt', // -createdAt for reverse
-	  filter: {
-	    'createdAt-start': minus5days.toISOString(), // ISO Date
-	    'createdAt-end': nows.toISOString(), // ISO Date
-	    playerNames: name
-	  }
-	};
-	  const vgly = new vainglory(config.VGL_KEY);
-	  vgly.setRegion(region);
-	  let matches = await vgly.matches.collection(voptions);
-	  callback(matches);
-  }
-  
-  async _vaingloryPlayerStat(name,region,callback){
-	  const vgly = new vainglory(config.VGL_KEY);
-	  vgly.setRegion(region); 
-	  let players = await vgly.players.getByName(name);
-	  callback(players);
-  }
-  
-  _base64Image(src, callback) {
+  async _base64Image(src, callback) {
     let datax = fs.readFileSync(src).toString("base64");
     let cx = util.format("data:%s;base64,%s", mime.lookup(src), datax);
 	callback(cx);
@@ -714,7 +653,7 @@ class LineAPI {
     return await this._client.fetchOperations(revision, count);
   }
 
-  _fetchOps(revision, count = 0) {
+ async  _fetchOps(revision, count = 0) {
     return this._client.fetchOps(revision, count,0,0);
   }
 
