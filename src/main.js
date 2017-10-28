@@ -7,7 +7,7 @@ const path = require('path');
 const rp = require('request-promise');
 const config = require('./config');
 const { Message, OpType, Location } = require('../curve-thrift/line_types');
-let exec = require('child_process').exec;
+//let exec = require('child_process').exec;
 
 const myBot = ['u5ee3f8b1c2783990512a02c14d312c89','u88551cb4b9ab9508138d5d35da962c9c'];
 const banList = [];//Banned list
@@ -35,6 +35,15 @@ function isTGet(string,param){
 
 function isImg(param) {
     return imgArr.includes(param);
+}
+
+function ambilKata(params, kata1, kata2){
+    if(params.indexOf(kata1) === false) return false;
+    if(params.indexOf(kata2) === false) return false;
+    let start = params.indexOf(kata1) + kata1.length;
+    let end = params.indexOf(kata2, start);
+    let returns = params.substr(start, end - start);
+    return returns;
 }
 
 class LINE extends LineAPI {
@@ -103,11 +112,13 @@ class LINE extends LineAPI {
 
     poll(operation) {
         if(operation.type == 25 || operation.type == 26) {
+			console.info(operation.message);
             const txt = (operation.message.text !== '' && operation.message.text != null ) ? operation.message.text : '' ;
             let message = new Message(operation.message);
             this.receiverID = message.to = (operation.message.to === myBot[0]) ? operation.message.from_ : operation.message.to ;
             Object.assign(message,{ ct: operation.createdTime.toString() });
             if(waitMsg == "yes" && operation.message.from_ == vx[0] && this.stateStatus.mute != 1){
+				console.info("Wait MSG");
 				this.textMessage(txt,message,message.text)
 			}else if(this.stateStatus.mute != 1){this.textMessage(txt,message);
 			}else if(txt == "!unmute" && isAdminOrBot(operation.message.from_) && this.stateStatus.mute == 1){
@@ -119,6 +130,8 @@ class LINE extends LineAPI {
         if(operation.type == 13 && this.stateStatus.cancel == 1 && !isAdminOrBot(operation.param2)) {//someone inviting..
             this.cancelAll(operation.param1);
         }
+		
+		if(operation.type == 53 || operation.type == 43 || operation.type == 41 || operation.type == 24 || operation.type == 15 || operation.type == 21){console.info(operation);}
 		
 		if(operation.type == 16 && this.stateStatus.salam == 1){//join group
 			let halo = new Message();
@@ -208,6 +221,7 @@ class LINE extends LineAPI {
 
         if(operation.type == 55){ //ada reader
 
+		    console.info(operation);
             const idx = this.checkReader.findIndex((v) => {
                 if(v.group == operation.param1) {
                     return v
@@ -316,6 +330,7 @@ class LINE extends LineAPI {
 			let isinya = "Setting\n";
 			for (var k in this.stateStatus){
                 if (typeof this.stateStatus[k] !== 'function') {
+                    console.info("Key is " + k + ", value is" + this.stateStatus[k]);
 					if(this.stateStatus[k]==1){
 						isinya += " "+firstToUpperCase(k)+" => on\n";
 					}else{
@@ -332,6 +347,7 @@ class LINE extends LineAPI {
 			let isinya = "Setting\n";
 			for (var k in this.stateStatus){
                 if (typeof this.stateStatus[k] !== 'function') {
+                    console.info("Key is " + k + ", value is" + this.stateStatus[k]);
 					if(this.stateStatus[k]==1){
 						isinya += " "+firstToUpperCase(k)+" => on\n";
 					}else{
@@ -423,6 +439,7 @@ class LINE extends LineAPI {
         mid.push(listMember.mid);
         let strings = mentionStrings.join('');
         let member = strings.split('@').slice(1);
+		console.info(member);
         
         let tmp = 0;
         let memberStart = [];
@@ -543,6 +560,7 @@ class LINE extends LineAPI {
 				let bang = new Message();
 				bang.to = seq.to;
 				if(vx[4] == "sudah"){
+					console.info("sudah");
 					bang.text = "Dia sudah masuk friendlist bang, gk bisa ku add lagi !";
 					this._client.sendMessage(0, bang);
 				}else{
@@ -564,6 +582,7 @@ class LINE extends LineAPI {
 				let bang = new Message();
 				bang.to = seq.to;
 				if(vx[4] == "sudah"){
+					console.info("sudah");
 					bang.text = "Dia sudah masuk friendlist bang, gk bisa ku add lagi !";
 					this._client.sendMessage(0, bang);
 				}else{
@@ -584,6 +603,7 @@ class LINE extends LineAPI {
 				let bang = new Message();
 				bang.to = seq.to;
 				if(vx[4] == "sudah"){
+					console.info("sudah");
 					bang.text = "Dia sudah masuk friendlist bang, gk bisa ku add lagi !";
 					this._client.sendMessage(0, bang);
 				}else{
@@ -660,7 +680,7 @@ class LINE extends LineAPI {
 				this._sendMessage(seq,"# CANCELLED");
 			}else if(seq.contentType == 13){
 				vx[0] = "";vx[1] = "";waitMsg = "no";vx[2] = "";vx[3] = "";
-				let midnya = seq.contentMetadata.mid;
+				let midnya = seq.contentMetadata.mid;console.info(midnya);
 				let timeline_post = await this._getHome(midnya,config.chanToken);
 				let bang = new Message();
 				bang.to = seq.to;
@@ -1051,7 +1071,7 @@ Link Download: "+idU.id+"\n";
 				vx[2] = "arg2";vx[3] = seq.id;
 				let hasil;let hasiltxt = "「 Anime Guess 」\n\n";
 				this._download("https://obs-sg.line-apps.com/talk/m/download.nhn?oid="+seq.id+"&tid=original","img",0,(result) => {
-					const filepath = path.resolve(result);
+					const filepath = path.resolve(result);console.info(filepath);
                     //let buffx = fs.readFileSync(filepath);
                     // convert binary data to base64 encoded string
 					//let cmx = new command();
@@ -1107,7 +1127,7 @@ Link Download: "+idU.id+"\n";
 				vx[2] = "arg3";
 				let hasil;let hasiltxt = "「 Anime Guess 」\n\n";
 				this._download("https://obs-sg.line-apps.com/talk/m/download.nhn?oid="+vx[3]+"&tid=original","img",0,(result) => {
-					const filepath = path.resolve(result);
+					const filepath = path.resolve(result);console.info(filepath);
                     //let buffx = fs.readFileSync(filepath);
                     // convert binary data to base64 encoded string
 					//let cmx = new command();
@@ -1163,7 +1183,7 @@ Link Download: "+idU.id+"\n";
 				vx[2] = "arg4";
 				let hasil;let hasiltxt = "「 Anime Guess 」\n\n";
 				this._download("https://obs-sg.line-apps.com/talk/m/download.nhn?oid="+vx[3]+"&tid=original","img",0,(result) => {
-					const filepath = path.resolve(result);
+					const filepath = path.resolve(result);console.info(filepath);
                     //let buffx = fs.readFileSync(filepath);
                     // convert binary data to base64 encoded string
 					//let cmx = new command();
@@ -1218,7 +1238,7 @@ Link Download: "+idU.id+"\n";
 			} else if(vx[2] == "arg4" && txt == "page4"){
 				let hasil;let hasiltxt = "「 Anime Guess 」\n\n";
 				this._download("https://obs-sg.line-apps.com/talk/m/download.nhn?oid="+vx[3]+"&tid=original","img",0,(result) => {
-					const filepath = path.resolve(result);
+					const filepath = path.resolve(result);console.info(filepath);
                     //let buffx = fs.readFileSync(filepath);
                     // convert binary data to base64 encoded string
 					//let cmx = new command();
@@ -1297,323 +1317,6 @@ Link Download: "+idU.id+"\n";
 			}
 		}else if(txt == "!animesearch" && isBanned(seq.from_)){this._sendMessage(seq,"Not permitted !");}
 		
-		if(vx[1] == "!vainglory" && seq.from_ == vx[0] && waitMsg == "yes"){
-			if(txt == "cancel"){
-				vx[0] = "";vx[1] = "";waitMsg = "no";vx[2] = "";vx[3] = "";vx[4] = "";vx[5] = "";
-				this._sendMessage(seq,"#CANCELLED");
-			}else if(vx[2] == "arg1" && !cox[1] && !cot[1]){
-				vx[3] = textMessages;vx[2] = "arg2";
-				this._sendMessage(seq,"Region mana ? \n- SEA = sg\n- East Asia = ea\n- South America = sa\n- Europe = eu \n- North America = na");
-			}else if(vx[2] == "arg2" && !cox[1] && !cot[1]){
-				vx[4] = textMessages;vx[2] = "arg3";let M = new Message();M.to = seq.to;M.text = '「 Vainglory Stat 」\n\n';
-				switch(vx[4]){
-					case 'sg':
-					    this._sendMessage(seq,"SEA");
-						this._sendMessage(seq,"Pls wait....");
-						this._vaingloryPlayerStat([vx[3]],vx[4],(res) => {
-							let dat = res.data;
-							for(var i = 0;i < dat.length; i++){
-								let type = dat[i].type;
-								let id = dat[i].id;
-								let attr = dat[i].attributes;
-								let name = attr.name;
-								let pregion = attr.shardId;
-								let level = attr.stats.level;
-								let lifetimeGold = attr.stats.lifetimeGold;
-								let losss = attr.stats.lossStreak;
-								let winss = attr.stats.winStreak;
-								let wins = attr.stats.wins;
-								let vgver = attr.patchVersion;
-								let batroym = attr.stats.played_aral;
-								let blitzm = attr.stats.played_blitz;
-								let casualm = attr.stats.played_casual;
-								let rankm = attr.stats.played_ranked;
-								M.text += "Name: "+name+"\nLevel: "+level+"\nRegion: "+pregion+"\nTotal wins: "+wins+"\nWin Streak: "+winss+"\nLose Streak: "+losss+"\n\n「 Total played 」\n\nCasual / Normal: "+casualm+"\nRanked: "+rankm+"\nBattle Royal: "+batroym+"\nBlitz: "+blitzm+"\n\nVainglory "+vgver;
-							}
-							this._client.sendMessage(0,M);
-						});
-						vx[0] = "";vx[1] = "";waitMsg = "no";vx[2] = "";vx[3] = "";vx[4] = "";vx[5] = "";
-					break;
-					case 'ea':
-					    this._sendMessage(seq,"East Asia");
-						this._sendMessage(seq,"Pls wait....");
-						this._vaingloryPlayerStat([vx[3]],vx[4],(res) => {
-							let dat = res.data;
-							for(var i = 0;i < dat.length; i++){
-								let type = dat[i].type;
-								let id = dat[i].id;
-								let attr = dat[i].attributes;
-								let name = attr.name;
-								let pregion = attr.shardId;
-								let level = attr.stats.level;
-								let lifetimeGold = attr.stats.lifetimeGold;
-								let losss = attr.stats.lossStreak;
-								let winss = attr.stats.winStreak;
-								let wins = attr.stats.wins;
-								let vgver = attr.patchVersion;
-								let batroym = attr.stats.played_aral;
-								let blitzm = attr.stats.played_blitz;
-								let casualm = attr.stats.played_casual;
-								let rankm = attr.stats.played_ranked;
-								M.text += "Name: "+name+"\nLevel: "+level+"\nRegion: "+pregion+"\nTotal wins: "+wins+"\nWin Streak: "+winss+"\nLose Streak: "+losss+"\n\n「 Total played 」\n\nCasual / Normal: "+casualm+"\nRanked: "+rankm+"\nBattle Royal: "+batroym+"\nBlitz: "+blitzm+"\n\nVainglory "+vgver;
-							}
-							this._client.sendMessage(0,M);
-						});
-						vx[0] = "";vx[1] = "";waitMsg = "no";vx[2] = "";vx[3] = "";vx[4] = "";vx[5] = "";
-					break;
-					case 'sa':
-					    this._sendMessage(seq,"South America");
-						this._sendMessage(seq,"Pls wait....");
-						this._vaingloryPlayerStat([vx[3]],vx[4],(res) => {
-							let dat = res.data;
-							for(var i = 0;i < dat.length; i++){
-								let type = dat[i].type;
-								let id = dat[i].id;
-								let attr = dat[i].attributes;
-								let name = attr.name;
-								let pregion = attr.shardId;
-								let level = attr.stats.level;
-								let lifetimeGold = attr.stats.lifetimeGold;
-								let losss = attr.stats.lossStreak;
-								let winss = attr.stats.winStreak;
-								let wins = attr.stats.wins;
-								let vgver = attr.patchVersion;
-								let batroym = attr.stats.played_aral;
-								let blitzm = attr.stats.played_blitz;
-								let casualm = attr.stats.played_casual;
-								let rankm = attr.stats.played_ranked;
-								M.text += "Name: "+name+"\nLevel: "+level+"\nRegion: "+pregion+"\nTotal wins: "+wins+"\nWin Streak: "+winss+"\nLose Streak: "+losss+"\n\n「 Total played 」\n\nCasual / Normal: "+casualm+"\nRanked: "+rankm+"\nBattle Royal: "+batroym+"\nBlitz: "+blitzm+"\n\nVainglory "+vgver;
-							}
-							this._client.sendMessage(0,M);
-						});
-						vx[0] = "";vx[1] = "";waitMsg = "no";vx[2] = "";vx[3] = "";vx[4] = "";vx[5] = "";
-					break;
-					case 'eu':
-					    this._sendMessage(seq,"Europe");
-						this._sendMessage(seq,"Pls wait....");
-						this._vaingloryPlayerStat([vx[3]],vx[4],(res) => {
-							let dat = res.data;
-							for(var i = 0;i < dat.length; i++){
-								let type = dat[i].type;
-								let id = dat[i].id;
-								let attr = dat[i].attributes;
-								let name = attr.name;
-								let pregion = attr.shardId;
-								let level = attr.stats.level;
-								let lifetimeGold = attr.stats.lifetimeGold;
-								let losss = attr.stats.lossStreak;
-								let winss = attr.stats.winStreak;
-								let wins = attr.stats.wins;
-								let vgver = attr.patchVersion;
-								let batroym = attr.stats.played_aral;
-								let blitzm = attr.stats.played_blitz;
-								let casualm = attr.stats.played_casual;
-								let rankm = attr.stats.played_ranked;
-								M.text += "Name: "+name+"\nLevel: "+level+"\nRegion: "+pregion+"\nTotal wins: "+wins+"\nWin Streak: "+winss+"\nLose Streak: "+losss+"\n\n「 Total played 」\n\nCasual / Normal: "+casualm+"\nRanked: "+rankm+"\nBattle Royal: "+batroym+"\nBlitz: "+blitzm+"\n\nVainglory "+vgver;
-							}
-							this._client.sendMessage(0,M);
-						});
-						vx[0] = "";vx[1] = "";waitMsg = "no";vx[2] = "";vx[3] = "";vx[4] = "";vx[5] = "";
-					break;
-					case 'na':
-					    this._sendMessage(seq,"North America");
-						this._sendMessage(seq,"Pls wait....");
-						this._vaingloryPlayerStat([vx[3]],vx[4],(res) => {
-							let dat = res.data;
-							for(var i = 0;i < dat.length; i++){
-								let type = dat[i].type;
-								let id = dat[i].id;
-								let attr = dat[i].attributes;
-								let name = attr.name;
-								let pregion = attr.shardId;
-								let level = attr.stats.level;
-								let lifetimeGold = attr.stats.lifetimeGold;
-								let losss = attr.stats.lossStreak;
-								let winss = attr.stats.winStreak;
-								let wins = attr.stats.wins;
-								let vgver = attr.patchVersion;
-								let batroym = attr.stats.played_aral;
-								let blitzm = attr.stats.played_blitz;
-								let casualm = attr.stats.played_casual;
-								let rankm = attr.stats.played_ranked;
-								M.text += "Name: "+name+"\nLevel: "+level+"\nRegion: "+pregion+"\nTotal wins: "+wins+"\nWin Streak: "+winss+"\nLose Streak: "+losss+"\n\n「 Total played 」\n\nCasual / Normal: "+casualm+"\nRanked: "+rankm+"\nBattle Royal: "+batroym+"\nBlitz: "+blitzm+"\n\nVainglory "+vgver;
-							}
-							this._client.sendMessage(0,M);
-						});
-						vx[0] = "";vx[1] = "";waitMsg = "no";vx[2] = "";vx[3] = "";vx[4] = "";vx[5] = "";
-					break;
-					default:
-					    this._sendMessage(seq,"Invalid region !");
-						vx[0] = "";vx[1] = "";waitMsg = "no";vx[2] = "";vx[3] = "";vx[4] = "";vx[5] = "";
-				        this._sendMessage(seq,"#CANCELLED");
-				}
-			}else{
-				this._sendMessage(seq,"# How to !vainglory:\n>Kirim nickname yg akan dilihat game statistiknya\n>Pilih region servernya");
-			}
-		}
-		if(txt == "!vainglory" && !isBanned(seq.from_)){
-			if(vx[2] == null || typeof vx[2] === "undefined" || !vx[2]){
-				waitMsg = "yes";
-			    vx[0] = seq.from_;vx[1] = txt;
-			    this._sendMessage(seq,"Mau liat statistik vainglory anda ? Ok, kirim nickname anda !");
-				vx[2] = "arg1";
-			}else{
-				waitMsg = "no";vx[0] = "";vx[1] = "";vx[2] = "";vx[3] = "";
-				this._sendMessage(seq,"#CANCELLED");
-			}
-		}else if(txt == "!vainglory" && isBanned(seq.from_)){this._sendMessage(seq,"Not permitted !");}
-		
-		if(vx[1] == "!vainmatch" && seq.from_ == vx[0] && waitMsg == "yes"){
-			if(txt == "cancel"){
-				vx[0] = "";vx[1] = "";waitMsg = "no";vx[2] = "";vx[3] = "";vx[4] = "";vx[5] = "";
-				this._sendMessage(seq,"#CANCELLED");
-			}else if(vx[2] == "arg1" && !cox[1] && !cot[1]){
-				vx[3] = textMessages;vx[2] = "arg2";
-				this._sendMessage(seq,"Region mana ? \n- SEA = sg\n- East Asia = ea\n- South America = sa\n- Europe = eu \n- North America = na");
-			}else if(vx[2] == "arg2" && !cox[1] && !cot[1]){
-				vx[4] = textMessages;vx[2] = "arg3";let M = new Message();M.to = seq.to;M.text = '';
-				switch(vx[4]){
-					case 'sg':
-					    this._sendMessage(seq,"SEA");
-						this._sendMessage(seq,"Pls wait....");
-						this._vaingloryPlayerMatch([vx[3]],vx[4],(res) => {
-							let dat = res.match;
-							for(var i = 0;i < dat.length; i++){
-								let type = dat[i].data.type;
-								let id = dat[i].data.id;
-								let attr = dat[i].data.attributes;
-								let pregion = attr.shardId;
-								let endgame = attr.stats.endGameReason;
-								let vgver = attr.patchVersion;
-								this._isoToDate(attr.createdAt,(datem) => {
-									this._vaingloryGameDuration(attr.duration,(duration) => {
-										this._vaingloryGameMode(attr.gameMode,(mode) => {
-											M.text += "「 "+datem+" 」\nMatch ID: \n"+id+"\nMatch Type: "+mode+"\nMatch Duration: "+duration+"\nMatch Region: "+pregion+"\nEnd Game Reason: "+endgame+"\n\n";
-										})
-									})
-								})
-							}
-							this._client.sendMessage(0,M);
-						});
-						vx[0] = "";vx[1] = "";waitMsg = "no";vx[2] = "";vx[3] = "";vx[4] = "";vx[5] = "";
-					break;
-					case 'ea':
-					    this._sendMessage(seq,"East Asia");
-						this._sendMessage(seq,"Pls wait....");
-						this._vaingloryPlayerMatch([vx[3]],vx[4],(res) => {
-							let dat = res.match;
-							for(var i = 0;i < dat.length; i++){
-								let type = dat[i].data.type;
-								let id = dat[i].data.id;
-								let attr = dat[i].data.attributes;
-								let pregion = attr.shardId;
-								let endgame = attr.stats.endGameReason;
-								let vgver = attr.patchVersion;
-								this._isoToDate(attr.createdAt,(datem) => {
-									this._vaingloryGameDuration(attr.duration,(duration) => {
-										this._vaingloryGameMode(attr.gameMode,(mode) => {
-											M.text += "「 "+datem+" 」\nMatch ID: \n"+id+"\nMatch Type: "+mode+"\nMatch Duration: "+duration+"\nMatch Region: "+pregion+"\nEnd Game Reason: "+endgame+"\n\n";
-										})
-									})
-								})
-							}
-							this._client.sendMessage(0,M);
-						});
-						vx[0] = "";vx[1] = "";waitMsg = "no";vx[2] = "";vx[3] = "";vx[4] = "";vx[5] = "";
-					break;
-					case 'sa':
-					    this._sendMessage(seq,"South America");
-						this._sendMessage(seq,"Pls wait....");
-						this._vaingloryPlayerMatch([vx[3]],vx[4],(res) => {
-							let dat = res.match;
-							for(var i = 0;i < dat.length; i++){
-								let type = dat[i].data.type;
-								let id = dat[i].data.id;
-								let attr = dat[i].data.attributes;
-								let pregion = attr.shardId;
-								let endgame = attr.stats.endGameReason;
-								let vgver = attr.patchVersion;
-								this._isoToDate(attr.createdAt,(datem) => {
-									this._vaingloryGameDuration(attr.duration,(duration) => {
-										this._vaingloryGameMode(attr.gameMode,(mode) => {
-											M.text += "「 "+datem+" 」\nMatch ID: \n"+id+"\nMatch Type: "+mode+"\nMatch Duration: "+duration+"\nMatch Region: "+pregion+"\nEnd Game Reason: "+endgame+"\n\n";
-										})
-									})
-								})
-							}
-							this._client.sendMessage(0,M);
-						});
-						vx[0] = "";vx[1] = "";waitMsg = "no";vx[2] = "";vx[3] = "";vx[4] = "";vx[5] = "";
-					break;
-					case 'eu':
-					    this._sendMessage(seq,"Europe");
-						this._sendMessage(seq,"Pls wait....");
-						this._vaingloryPlayerMatch([vx[3]],vx[4],(res) => {
-							let dat = res.match;
-							for(var i = 0;i < dat.length; i++){
-								let type = dat[i].data.type;
-								let id = dat[i].data.id;
-								let attr = dat[i].data.attributes;
-								let pregion = attr.shardId;
-								let endgame = attr.stats.endGameReason;
-								let vgver = attr.patchVersion;
-								this._isoToDate(attr.createdAt,(datem) => {
-									this._vaingloryGameDuration(attr.duration,(duration) => {
-										this._vaingloryGameMode(attr.gameMode,(mode) => {
-											M.text += "「 "+datem+" 」\nMatch ID: \n"+id+"\nMatch Type: "+mode+"\nMatch Duration: "+duration+"\nMatch Region: "+pregion+"\nEnd Game Reason: "+endgame+"\n\n";
-										})
-									})
-								})
-							}
-							this._client.sendMessage(0,M);
-						});
-						vx[0] = "";vx[1] = "";waitMsg = "no";vx[2] = "";vx[3] = "";vx[4] = "";vx[5] = "";
-					break;
-					case 'na':
-					    this._sendMessage(seq,"North America");
-						this._sendMessage(seq,"Pls wait....");
-						this._vaingloryPlayerMatch([vx[3]],vx[4],(res) => {
-							let dat = res.match;
-							for(var i = 0;i < dat.length; i++){
-								let type = dat[i].data.type;
-								let id = dat[i].data.id;
-								let attr = dat[i].data.attributes;
-								let pregion = attr.shardId;
-								let endgame = attr.stats.endGameReason;
-								let vgver = attr.patchVersion;
-								this._isoToDate(attr.createdAt,(datem) => {
-									this._vaingloryGameDuration(attr.duration,(duration) => {
-										this._vaingloryGameMode(attr.gameMode,(mode) => {
-											M.text += "「 "+datem+" 」\nMatch ID: \n"+id+"\nMatch Type: "+mode+"\nMatch Duration: "+duration+"\nMatch Region: "+pregion+"\nEnd Game Reason: "+endgame+"\n\n";
-										})
-									})
-								})
-							}
-							this._client.sendMessage(0,M);
-						});
-						vx[0] = "";vx[1] = "";waitMsg = "no";vx[2] = "";vx[3] = "";vx[4] = "";vx[5] = "";
-					break;
-					default:
-					    this._sendMessage(seq,"Invalid region !");
-						vx[0] = "";vx[1] = "";waitMsg = "no";vx[2] = "";vx[3] = "";vx[4] = "";vx[5] = "";
-				        this._sendMessage(seq,"#CANCELLED");
-				}
-			}else{
-				this._sendMessage(seq,"# How to !vainmatch:\n>Kirim nickname yg akan dilihat statistiknya\n>Pilih region servernya");
-			}
-		}
-		if(txt == "!vainmatch" && !isBanned(seq.from_)){
-			if(vx[2] == null || typeof vx[2] === "undefined" || !vx[2]){
-				waitMsg = "yes";
-			    vx[0] = seq.from_;vx[1] = txt;
-			    this._sendMessage(seq,"Mau liat hasil pertandingan vainglory anda ? Ok, kirim nickname anda !");
-				vx[2] = "arg1";
-			}else{
-				waitMsg = "no";vx[0] = "";vx[1] = "";vx[2] = "";vx[3] = "";
-				this._sendMessage(seq,"#CANCELLED");
-			}
-		}else if(txt == "!vainmatch" && isBanned(seq.from_)){this._sendMessage(seq,"Not permitted !");}
-		
 		if(vx[1] == "!botleft" && seq.from_ == vx[0] && waitMsg == "yes"){
 			if(txt == "cancel"){
 				vx[0] = "";vx[1] = "";waitMsg = "no";vx[2] = "";vx[3] = "";
@@ -1639,6 +1342,16 @@ Link Download: "+idU.id+"\n";
 			}
 		}else if(txt == "!botleft" && !isAdminOrBot(seq.from_)){this._sendMessage(seq,"Not permitted !");}
 
+		/*if(txt == "profile"){
+			let orangnya = await this._client.getContacts([seq.from]);
+		    console.info(orangnya);
+		}*/
+		
+		if(txt == "1123"){
+			//let orangnya = await this._client.getAllContactIds();
+			console.info(orangnya);
+		}
+		
 		if(txt == "!mute" && isAdminOrBot(seq.from_)){
 			this.stateStatus.mute = 1;
 			this._sendMessage(seq,"(*´﹃｀*)")
@@ -1684,11 +1397,11 @@ Link Download: "+idU.id+"\n";
             this._sendMessage(seq, xtime+' second');
         }else if(txt == '!speed' && isBanned(banList, seq.from_)){this._sendMessage(seq,"Not permitted !");}
 
-        if(txt === 'kernel') {
+        /*if(txt === 'kernel') {
             exec('uname -a;ptime;id;whoami',(err, sto) => {
                 this._sendMessage(seq, sto);
             })
-        }
+        }*/
 
         if(txt === '!kickall' && this.stateStatus.kick == 1 && isAdminOrBot(seq.from_) && seq.toType == 2) {
             let { listMember } = await this.searchGroup(seq.to);
@@ -1719,8 +1432,10 @@ Link Download: "+idU.id+"\n";
                 if(listMember[i].mid==param){
 					let namanya = listMember[i].dn;
 					seq.text = 'Halo @'+namanya+', Selamat datang bro ! Salam Kenal ^_^';
+					console.info(namanya);
 					let midnya = listMember[i].mid;
 					let kata = seq.text.split("@").slice(0,1);
+					console.info(kata);
 					let kata2 = kata[0].split("");
 					let panjang = kata2.length;
                     let member = [namanya];
@@ -1759,8 +1474,10 @@ Link Download: "+idU.id+"\n";
                 if(listMember[i].mid==param){
 					let namanya = listMember[i].dn;
 					seq.text = 'Goodbye ! @'+namanya;
+					console.info(namanya);
 					let midnya = listMember[i].mid;
 					let kata = seq.text.split("@").slice(0,1);
+					console.info(kata);
 					let kata2 = kata[0].split("");
 					let panjang = kata2.length;
                     let member = [namanya];
@@ -1780,31 +1497,70 @@ Link Download: "+idU.id+"\n";
             }
         }
 
-        if(txt == 'setpoint') {
+        /*if(txt == 'setpoint') {
             this._sendMessage(seq, `Setpoint for check reader.`);
             this.removeReaderByGroup(seq.to);
-        }
+        }*/
 
-        if(txt == 'clear') {
+        /*if(txt == 'clear') {
             this.checkReader = []
             this._sendMessage(seq, `Remove all check reader on memory`);
-        }  
+        }  */
 
-        if(txt == 'recheck'){
+        /*if(txt == 'recheck'){
             let rec = await this.recheck(this.checkReader,seq.to);
             const mentions = await this.mention(rec);
             seq.contentMetadata = mentions.cmddata;
             await this._sendMessage(seq,mentions.names.join(''));
             
-        }
+        }*/
 
-        if(txt == 'setpoint for check reader .') {
+        /*if(txt == 'setpoint for check reader .') {
             this.searchReader(seq);
-        }
+        }*/
 
-        if(txt == 'clearall') {
+        /*if(txt == 'clearall') {
             this.checkReader = [];
-        }
+        }*/
+		
+		if(txt == "tess"){
+			this._vaingloryPlayerMatch(['GoogleX'],'sg',(res) => {
+				console.info(JSON.stringify(res));
+			});
+			//let bot = await this._client.getProfile();
+			/*let headerx = {
+				'User-Agent':'DESKTOP:WIN:10.10.2-YOSEMITE-x64(4.5.0)',
+				'X-Line-Access':config.tokenn,
+				"X-Line-Mid": bot.mid,
+                "x-lct": config.chanToken
+			}*/
+			//this.getJson(config.LINE_RS,headerx).then((res) => (res.error ? console.log('err',res.error) : console.log(res)));
+			//console.info(await this._client.getProfile());
+			//console.info(await this._client.getSettings());
+			//let timeline_post = await this._getPost(this.limitposts,config.chanToken);
+			//let album_res = await this._getAlbum(seq.to,config.chanToken);
+			//console.info(await this._client.getRoom(seq.to));
+			//await this._sendImage(seq.to,'logo.png');
+			//console.info(await this.getJson("/tl/mapi/v21/activities?postLimit=1"));
+			//console.info(await this._client.createSession());
+			//console.info(await this._client.getProfile());
+			///console.info(await this._client.getSessions());
+			//console.info(await this._client.getLastOpRevision());
+			///console.info(await this._client.getLastAnnouncementIndex());
+			//console.info(await this._client.getIdentityIdentifier()); //email
+			//console.info(await this._client.getCompactGroup(seq.to)); //sama kayak get groups
+			//console.info(album_res);
+			//console.info(album_res.result.feeds[0].post.comments[0].contentsList);
+			//console.info(album_res.result.feeds[0].post);
+			//console.info(album_res.result.items[0]);
+			//let ress = album_res.result.items[0].id;
+			//await this._insertAlbum(seq.to,ress,config.chanToken,__dirname+"/img.jpg");
+			//let ax = new Message();
+			//ax.text = "a";
+			//console.info(await this._client.sendMessageToMyHome(0, ax));//kayak pesan status, tapi gk update
+			//console.info(await this._client.acquireEncryptedAccessToken());
+			///console.info(await this._client.updateNotificationToken());
+		}
 		
 		if(txt == '!botcontact'){
 			let probot = await this._client.getProfile();
@@ -1850,14 +1606,14 @@ Link Download: "+idU.id+"\n";
             this._sendMessage(seq,"ID Kamu: "+seq.from_);
         }
 		
-        if(txt == 'speedtest' && isAdminOrBot(seq.from)) {
+       /* if(txt == 'speedtest' && isAdminOrBot(seq.from)) {
             exec('speedtest-cli --server 6581',(err, res) => {
                     this._sendMessage(seq,res)
             })
-        }
+        }*/
 		
 		if(txt == "!whattime" && !isBanned(banList,seq.from_)){
-			let d = new Date();let xmenit = d.getMinutes().toString().split("");
+			let d = new Date();let xmenit = d.getMinutes().toString().split("");console.info(xmenit.length);
 			if(xmenit.length < 2){
 				this._sendMessage(seq, d.getHours()+":0"+d.getMinutes());
 			}else{
@@ -1903,7 +1659,7 @@ Link Download: "+idU.id+"\n";
         const joinByUrl = ['!gurl'];
         if(joinByUrl.includes(txt)) {
             this._sendMessage(seq,`Updating group ...`);
-            let updateGroup = await this._getGroup(seq.to);
+            let updateGroup = await this._getGroup(seq.to);console.info(updateGroup);
             if(updateGroup.preventJoinByTicket === true) {
                 updateGroup.preventJoinByTicket = false;
 				await this._updateGroup(updateGroup);
@@ -1936,8 +1692,8 @@ Link Download: "+idU.id+"\n";
 		
 		if(gTicket[0] == "!join" && isAdminOrBot(seq.from_)){
 			let sudah = "no";
-			let grp = await this._client.findGroupByTicket(gTicket[1]);
-			let lGroup = await this._client.getGroupIdsJoined();
+			let grp = await this._client.findGroupByTicket(gTicket[1]);console.info(grp);
+			let lGroup = await this._client.getGroupIdsJoined();console.info(lGroup);
 			for(var i = 0; i < lGroup.length; i++){
 				if(grp.id == lGroup[i]){
 					sudah = "ya";
@@ -1951,13 +1707,13 @@ Link Download: "+idU.id+"\n";
 			}
 		}
 
-        if(cmd == 'join') {
+        /*if(cmd == 'join') {
             const [ ticketId ] = payload.split('g/').splice(-1);
             let { id } = await this._findGroupByTicket(ticketId);
             await this._acceptGroupInvitationByTicket(id,ticketId);
-        }
+        }*/
 
-        if(cmd === 'ip') {
+        /*if(cmd === 'ip') {
             exec(`curl ipinfo.io/${payload}`,(err, res) => {
                 const result = JSON.parse(res);
                 if(typeof result.error == 'undefined') {
@@ -1986,7 +1742,7 @@ Link Download: "+idU.id+"\n";
                     this._sendMessage(seq,'Location Not Found , Maybe di dalem goa');
                 }
             })
-        }
+        }*/
     }
 
 }
