@@ -29,13 +29,10 @@ Still work :construction_worker:
 ----
 **CHANGELOG**
 - Bug fixed
-- Remove vainglory feature
-- New feature: anime search by image
+- New feature: Text to Speech
 
 **TO - DO**
-- Add keyword for (Send Image & Broadcast)
-- Send VN
-- Send Video
+- Nothing
 
 CMD / KEYWORD
 ------
