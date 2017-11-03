@@ -43,16 +43,27 @@ class LineConnect extends LineAPI {
 
   async startx () {
     if (this.authToken){
-		await this._tokenLogin(this.authToken, this.certificate);
-		await this._chanConn();
-		let icH = await this._channel.issueChannelToken("1341209950");config.chanToken = icH.channelAccessToken;
-		return this.longpoll();
+		return new Promise((resolve, reject) => {
+		    this._tokenLogin(this.authToken, this.certificate);
+		    this._chanConn();
+		    this._channel.issueChannelToken("1341209950",(err, result)=>{
+				config.chanToken = result.channelAccessToken;
+				resolve(this.longpoll());
+			});
+        });
     } else if(this.password && this.email){
-		await this._xlogin(this.email,this.password);
-		await this._chanConn();
-		console.info("Success Login!");
-		let icH = await this._channel.issueChannelToken("1341209950");config.chanToken = icH.channelAccessToken;
-		return this.longpoll();
+		return new Promise((resolve, reject) => {
+			this._xlogin(this.email,this.password).then(()=>{
+				this._chanConn();
+				console.info("Success Login!");
+				console.info(`\n[*] Token: ${config.tokenn}`);
+				this.config.Headers['X-Line-Access'] = config.tokenn;
+				this._channel.issueChannelToken("1341209950",(err, result)=>{
+					config.chanToken = result.channelAccessToken;
+					resolve(this.longpoll());
+				});
+			})
+        });
 	} else {
       return new Promise((resolve, reject) => {
         this.getQrFirst().then(async (res) => {
@@ -62,18 +73,18 @@ class LineConnect extends LineAPI {
     }
   }
   
-  fetchOps(rev) {
-    return this._fetchOps(rev, 2);
+  async fetchOps(rev) {
+    return this._fetchOps(rev, 5);
   }
 
-  fetchOperations(rev) {
+  async fetchOperations(rev) {
     return this._fetchOperations(rev, 5);
     
   }
 
   longpoll() {
     return new Promise((resolve, reject) => {
-      this._fetchOps(this.revision, 2).then((operations) => {
+      this._fetchOps(this.revision, 5).then((operations) => {
         if (!operations) {
           console.log('No operations');
           reject('No operations');
