@@ -59,7 +59,7 @@ class LineAPI {
 	}
     this.options = options;
     this.connection =
-      thrift.createHttpConnection(this.config.LINE_DOMAIN_TOOFAST, 443, this.options);
+      thrift.createHttpConnection(this.config.LINE_DOMAIN_FAST, 443, this.options);
     this.connection.on('error', (err) => {
       console.log('err',err);
       return err;
@@ -279,7 +279,7 @@ class LineAPI {
   }
   
   async _dlImg(uri, filenames, callback){
-    await request.head(uri, function(err, res, body){request(uri).pipe(fs.createWriteStream(filenames)).on('finish', callback);});
+    await rp.head(uri, function(err, res, body){rp(uri).pipe(fs.createWriteStream(filenames)).on('finish', callback);});
   };
   
   async _getRSAKeyInfo(provider, callback){
@@ -287,11 +287,8 @@ class LineAPI {
 	  callback(result.keynm, result);
   }
   
-  async _fsUnlinkGambar(extF,filepats){
-	if(extF == "webp"){
-		fs.unlink(__dirname+this.config.FILE_DOWNLOAD_LOCATION+"/img.png", (err) => {if (err) {console.log("failed to delete local image:"+err);}else{}});
-	} else {fs.unlink(filepaths, (err) => {if (err) {console.log("failed to delete local image:"+err);}else{}});}
-    fs.unlink(filepaths, (err) => {if (err) {}else{}});
+  async _fsUnlinkFile(extF,filepaths){
+    fs.unlinkSync(filepaths);
   }
   
   async _getServerTime(timestamp){
@@ -319,10 +316,76 @@ class LineAPI {
             ver: '1.0'
           })
         };
-        return this.postContent(this.config.LINE_POST_CONTENT_URL, data, filepath).then((res) => (res.error ? this._fsUnlinkGambar(extF,filepath) : this._fsUnlinkGambar(extF,filepath)));
+        return this.postContent(this.config.LINE_POST_CONTENT_URL, data, filepath).then((res) => (res.error ? this._fsUnlinkFile(extF,filepath) : this._fsUnlinkFile(extF,filepath)));
     });}else{let aM = new Message();aM.to = to;aM.text = "Gagal, ekstensi file tidak diperbolehkan !";this._client.sendMessage(0,aM);}
   }
   
+  async _textToSpeech(words,lang,callback){
+	  let namef = __dirname+this.config.FILE_DOWNLOAD_LOCATION+"/tts.mp3";
+	  const xoptions = {
+          url: `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(words)}&tl=${lang}&client=tw-ob&ttsspeed=0.24`,
+          headers: {
+              'Referer': 'http://translate.google.com/',
+              'User-Agent': 'stagefright/1.2 (Linux;Android 5.0)'
+          }
+      }
+	  rp(xoptions).pipe(fs.createWriteStream(namef)).on('close', ()=>{callback(namef);})
+  }
+  
+  async _sendFile(message,filepaths, typeContent = 1) {
+    let filename = 'media';
+    let typeFile;
+    
+    switch (typeContent) {
+      case 2:
+        typeFile = 'video'
+        break;
+      case 3:
+        typeFile = 'audio'
+        break;
+      default:
+        typeFile = 'image'
+        break;
+    }
+
+    let M = new Message();
+    M.to = message.to;
+    M.contentType= typeContent;
+    M.contentPreview= null;
+    M.contentMetadata= null;
+
+
+    const filepath = path.resolve(filepaths)
+    fs.readFile(filepath,async (err, bufs) => {
+      let imgID = await this._client.sendMessage(0,M);
+        const data = {
+          params: JSON.stringify({
+            name: filename,
+            oid: imgID.id,
+            size: bufs.length,
+            type: typeFile,
+            ver: '1.0'
+          })
+        };
+        return this
+          .postContent(config.LINE_POST_CONTENT_URL, data, filepath)
+          .then((res) => {
+            if(res.err) {
+              console.log('err',res.error)
+              return;
+            } 
+            if(filepath.search(/download\//g) === -1) {
+              fs.unlink(filepath, (err) => {
+                if (err) {
+                  console.log('err on upload',err);
+                  return err
+                };
+              });
+            }
+            
+          });
+    });
+  }
 
   async _sendImage(to,filepaths, filename = 'media') {
     let M = new Message();
@@ -429,7 +492,6 @@ class LineAPI {
 		let mids = posts[i].userInfo.mid;
 		let postId = posts[i].postInfo.postId;
 		if(liked === false){
-			console.info("like");
 			await this._liking(mids,postId,ctoken,1002);
 			await this._commentTL(mids,postId,ctoken,comment);
 		}
