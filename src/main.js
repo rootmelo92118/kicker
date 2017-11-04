@@ -1361,16 +1361,19 @@ Link Download: "+idU.id+"\n";
 				let M = new Message();
 				M.to = seq.to;
 				this._youSound(textMessages,(result)=>{
-					console.info(result);
-					let title = result.title;
-					let time = this._timeParse(result.length);
-					let xurl = result.url.replace("//","http://");
-					this.gooGl(xurl).then((rex)=>{
-						messagex += "Title: "+title+"\nDuration: "+time+"\nDownload link: "+rex.id;
-					    M.text = messagex;
-					    this._client.sendMessage(0,M);
-						this._sendMessage(seq,rex.id);
-					})
+					if(result.status == "ok"){
+						let title = result.title;
+						let time = this._timeParse(result.length);
+						let xurl = result.url.replace("//","http://");
+						this.gooGl(xurl).then((rex)=>{
+							messagex += "Title: "+title+"\nDuration: "+time+"\nDownload link: "+rex.id;
+						    M.text = messagex;
+						    this._client.sendMessage(0,M);
+							this._sendMessage(seq,rex.id);
+						})
+					}else{
+						this._sendMessage(seq,"Error: "+result.message);
+					}
 				});
 			}else if(vx[2] == "arg1" && !linktxt[1]){
 				this._sendMessage(seq,"# How to !yousound:\nKirimi link youtube-nya yang akan dikonversi");
