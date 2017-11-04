@@ -296,28 +296,24 @@ class LineAPI {
 	  return formatted;
   }
   
-  async _sendImageWithURL(to,urls,extF,filepaths,filename = 'media'){
-	let M = new Message();
-    M.to = to;
-    M.contentType = 1;
-    M.contentPreview = null;
-    M.contentMetadata = null;
-
+  async _sendImageWithURL(to,urls,extF,filepaths){
 	if(isImg(extF)){
-	const filepath = path.resolve(filepaths);
-    fs.readFile(filepath,async (err, bufs) => {
-      let imgID = await this._client.sendMessage(0,M);
-        const data = {
-          params: JSON.stringify({
-            name: filename,
-            oid: imgID.id,
-            size: bufs.length,
-            type: 'image',
-            ver: '1.0'
-          })
-        };
-        return this.postContent(this.config.LINE_POST_CONTENT_URL, data, filepath).then((res) => (res.error ? this._fsUnlinkFile(extF,filepath) : this._fsUnlinkFile(extF,filepath)));
-    });}else{let aM = new Message();aM.to = to;aM.text = "Gagal, ekstensi file tidak diperbolehkan !";this._client.sendMessage(0,aM);}
+		this._sendFile(to,filepaths,1);
+	}else{
+		let aM = new Message();aM.to = to;aM.text = "Gagal, ekstensi file tidak diperbolehkan !";this._client.sendMessage(0,aM);
+	}
+  }
+  
+  _timeParse(secondx){
+	  let sec_num = parseInt(secondx, 10); // don't forget the second param
+      let hours   = Math.floor(sec_num / 3600);
+      let minutes = Math.floor((sec_num - (hours * 3600)) / 60);
+      let seconds = sec_num - (hours * 3600) - (minutes * 60);
+
+    if (hours   < 10) {hours   = "0"+hours;}
+    if (minutes < 10) {minutes = "0"+minutes;}
+    if (seconds < 10) {seconds = "0"+seconds;}
+    return hours+':'+minutes+':'+seconds;
   }
   
   async _textToSpeech(words,lang,callback){
@@ -330,6 +326,29 @@ class LineAPI {
           }
       }
 	  rp(xoptions).pipe(fs.createWriteStream(namef)).on('close', ()=>{callback(namef);})
+  }
+  
+  async _youSound(urls,callback){
+	  let xurl = urls.replace(/\\/g , "");
+	  let video_id = xurl.split('v=')[1];
+	  let ampersandPosition = video_id.indexOf('&');
+      if(ampersandPosition != -1) {
+          video_id = video_id.substring(0, ampersandPosition);
+      }
+	  const xoptions = {
+          url: "http://www.yt-mp3.com/fetch?v="+video_id+"&referrer=&apikey=a941493eeea57ede8214fd77d41806bc",
+          headers: {
+              'Referer': 'http://www.yt-mp3.com',
+              'User-Agent': 'stagefright/1.2 (Linux;Android 5.0)',
+          },
+		  json: true
+      }
+	  rp(xoptions).then(function (parsedBody) {
+        callback(parsedBody);
+      })
+    .catch(function (err) {
+        console.info(err);
+      });
   }
   
   async _sendFile(message,filepaths, typeContent = 1) {
@@ -387,28 +406,8 @@ class LineAPI {
     });
   }
 
-  async _sendImage(to,filepaths, filename = 'media') {
-    let M = new Message();
-    M.to = to;
-    M.contentType = 1;
-    M.contentPreview = null;
-    M.contentMetadata = null;
-
-    const filepath = path.resolve(__dirname+filepaths)
-    fs.readFile(filepath,async (err, bufs) => {
-      let imgID = await this._client.sendMessage(0,M);
-      console.log(imgID.id);
-        const data = {
-          params: JSON.stringify({
-            name: filename,
-            oid: imgID.id,
-            size: bufs.length,
-            type: 'image',
-            ver: '1.0'
-          })
-        };
-        return this.postContent(this.config.LINE_POST_CONTENT_URL, data, filepath).then((res) => (res.error ? console.log('err',res.error) : console.log('done')));
-    });
+  async _sendImage(to,filepaths) {
+    this._sendFile(to,filepaths,1);
   }
   
   async _getAlbum(gid,ctoken){
