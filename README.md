@@ -1,5 +1,5 @@
 # alphat-new-generation
-Forked version of LineAlphat JS (Selfbot) #DEV #04/11/2017 #13PM
+Forked version of LineAlphat JS (Selfbot) #DEV #04/11/2017 #20PM
 <br>LineAlphat -> https://github.com/alfathdirk/LineAlphatJS<br><br>Status: Very Good
 
 <hr>
@@ -29,6 +29,7 @@ Still work :construction_worker:
 ----
 **CHANGELOG**
 - New feature: YouSound
+- Bug fixed (AuthToken Login Spam Chat)
 
 **TO - DO**
 - Nothing
