@@ -48,7 +48,11 @@ class LineConnect extends LineAPI {
 		    this._chanConn();
 		    this._channel.issueChannelToken("1341209950",(err, result)=>{
 				config.chanToken = result.channelAccessToken;
-				resolve(this.longpoll());
+				this._client.getLastOpRevision((err,result)=>{
+					let xrx = result.toString().split(" ");
+					this.revision = xrx[0].toString() - 1;
+					resolve(this.longpoll());
+				})
 			});
         });
     } else if(this.password && this.email){
