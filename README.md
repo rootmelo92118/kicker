@@ -1,5 +1,5 @@
 # alphat-new-generation
-Forked version of LineAlphat JS (Selfbot) #DEV #04/11/2017 #02AM
+Forked version of LineAlphat JS (Selfbot) #DEV #04/11/2017 #13PM
 <br>LineAlphat -> https://github.com/alfathdirk/LineAlphatJS<br><br>Status: Very Good
 
 <hr>
@@ -28,8 +28,7 @@ IMPORTANT
 Still work :construction_worker:
 ----
 **CHANGELOG**
-- Bug fixed
-- New feature: Text to Speech
+- New feature: YouSound
 
 **TO - DO**
 - Nothing
