@@ -96,6 +96,7 @@ class LINE extends LineAPI {
 => !vainglory\n\
 => !vainmatch\n\
 => !whattime\n\
+=> !yousound\n\
 => !youtube\n\
 \n\n# Gunakan bot dengan bijak ^_^";
         var that = this;
@@ -1350,6 +1351,43 @@ Link Download: "+idU.id+"\n";
 			}
 		}else if(txt == "!tts" && isBanned(seq.from_)){this._sendMessage(seq,"Not permitted !");}
 		
+		if(vx[1] == "!yousound" && seq.from_ == vx[0] && waitMsg == "yes"){
+			if(txt == "cancel"){
+				vx[0] = "";vx[1] = "";waitMsg = "no";vx[2] = "";vx[3] = "";
+				this._sendMessage(seq,"#CANCELLED");
+			}else if(vx[2] == "arg1" && linktxt[1]){
+				vx[0] = "";vx[1] = "";waitMsg = "no";vx[2] = "";vx[3] = "";
+				let messagex = "「 Youtube Converter 」\n\n";
+				let M = new Message();
+				M.to = seq.to;
+				this._youSound(textMessages,(result)=>{
+					console.info(result);
+					let title = result.title;
+					let time = this._timeParse(result.length);
+					let xurl = result.url.replace("//","http://");
+					this.gooGl(xurl).then((rex)=>{
+						messagex += "Title: "+title+"\nDuration: "+time+"\nDownload link: "+rex.id;
+					    M.text = messagex;
+					    this._client.sendMessage(0,M);
+						this._sendMessage(seq,rex.id);
+					})
+				});
+			}else if(vx[2] == "arg1" && !linktxt[1]){
+				this._sendMessage(seq,"# How to !yousound:\nKirimi link youtube-nya yang akan dikonversi");
+			}
+		}
+		if(txt == "!yousound" && !isBanned(seq.from_)){
+			if(vx[2] == null || typeof vx[2] === "undefined" || !vx[2]){
+				waitMsg = "yes";
+			    vx[0] = seq.from_;vx[1] = txt;
+			    await this._sendMessage(seq,"Ingin download video youtube dalam bentuk mp3 ?");
+				this._sendMessage(seq,"Ok, kirim link-nya");
+				vx[2] = "arg1";
+			}else{
+				waitMsg = "no";vx[0] = "";vx[1] = "";vx[2] = "";vx[3] = "";
+				this._sendMessage(seq,"#CANCELLED");
+			}
+		}else if(txt == "!yousound" && isBanned(seq.from_)){this._sendMessage(seq,"Not permitted !");}
 		
 		if(vx[1] == "!botleft" && seq.from_ == vx[0] && waitMsg == "yes"){
 			if(txt == "cancel"){
