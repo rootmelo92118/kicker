@@ -1596,7 +1596,7 @@ Link Download: "+idU.id+"\n";
 		if(cox[0] == "!getimage" && linktxt[1] && !isBanned(banList,seq.from_)){//getimage http://url.com/image.png
 			var that = this;
 			let dir = __dirname+this.config.FILE_DOWNLOAD_LOCATION;
-			cox[1] = "http"+linktxt[1];
+			cox[1] = "http"+linktxt[1].replace(/\\/g , "");
 			rp.head(cox[1], (err, res, body) => {
 			  let url = res.headers['content-type'].split("/");let extA = url[url.length-1].split(";");let extF = extA[0];
 			  let namef = dir+"/img."+extF;
@@ -1604,14 +1604,14 @@ Link Download: "+idU.id+"\n";
 					rp(cox[1]).pipe(fs.createWriteStream(namef)).on('close', 
 					  ()=>{
 						  if(extF == "webp"){
-							  webp.dwebp(namef,dir+"/img.jpg","-o",function(){that._sendImageWithURL(seq.to,cox[1],"jpg",dir+"/img.jpg");});
+							  webp.dwebp(namef,dir+"/img.jpg","-o",function(){that._sendImageWithURL(seq,cox[1],"jpg",dir+"/img.jpg");});
 						  }else{
-							  this._sendImageWithURL(seq.to,cox[1],extF,namef);
+							  this._sendImageWithURL(seq,cox[1],extF,namef);
 						  }
 					  });
 		      }else{let aM = new Message();aM.to = seq.to;aM.text = "Gagal, ekstensi file tidak diperbolehkan !";this._client.sendMessage(0,aM);}
 		    });
-		}else if(cox[0] == "!getimage" && linktxt[1] && isBanned(banList,seq.from_)){this._sendMessage(seq,"Not permitted!");}else if(cox[0] == "!getimage" && !linktxt[1] && !isBanned(banList,seq.from_)){this._sendMessage(seq,"# How to getimage:\ngetimage http://url.com/image.png");}
+		}else if(cox[0] == "!getimage" && linktxt[1] && isBanned(banList,seq.from_)){this._sendMessage(seq,"Not permitted!");}else if(cox[0] == "!getimage" && !linktxt[1] && !isBanned(banList,seq.from_)){this._sendMessage(seq,"# How to !getimage:\ngetimage http://url.com/image.png");}
 		
 		if(cox[0] == "album" && isAdminOrBot(seq.from_)){
 			await this._createAlbum(seq.to,cox[1],this.config.chanToken);
