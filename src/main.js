@@ -73,7 +73,8 @@ class LINE extends LineAPI {
 => broadcast *ADMIN*\n\
 => !cancel\n\
 => !cekid\n\
-=> getimage\n\
+=> !curl\n\
+=> !getimage\n\
 => !ginfo\n\
 => !gURL\n\
 => !halo\n\
@@ -93,8 +94,6 @@ class LINE extends LineAPI {
 => !tts\n\
 => !unmute *ADMIN*\n\
 => !unban *ADMIN*\n\
-=> !vainglory\n\
-=> !vainmatch\n\
 => !whattime\n\
 => !yousound\n\
 => !youtube\n\
@@ -1594,7 +1593,7 @@ Link Download: "+idU.id+"\n";
 			this._client.sendMessage(0,M);
 		}
 		
-		if(cox[0] == "getimage" && linktxt[1] && !isBanned(banList,seq.from_)){//getimage http://url.com/image.png
+		if(cox[0] == "!getimage" && linktxt[1] && !isBanned(banList,seq.from_)){//getimage http://url.com/image.png
 			var that = this;
 			let dir = __dirname+this.config.FILE_DOWNLOAD_LOCATION;
 			cox[1] = "http"+linktxt[1];
@@ -1612,7 +1611,7 @@ Link Download: "+idU.id+"\n";
 					  });
 		      }else{let aM = new Message();aM.to = seq.to;aM.text = "Gagal, ekstensi file tidak diperbolehkan !";this._client.sendMessage(0,aM);}
 		    });
-		}else if(cox[0] == "getimage" && linktxt[1] && isBanned(banList,seq.from_)){this._sendMessage(seq,"Not permitted!");}else if(cox[0] == "getimage" && !linktxt[1] && !isBanned(banList,seq.from_)){this._sendMessage(seq,"# How to getimage:\ngetimage http://url.com/image.png");}
+		}else if(cox[0] == "!getimage" && linktxt[1] && isBanned(banList,seq.from_)){this._sendMessage(seq,"Not permitted!");}else if(cox[0] == "!getimage" && !linktxt[1] && !isBanned(banList,seq.from_)){this._sendMessage(seq,"# How to getimage:\ngetimage http://url.com/image.png");}
 		
 		if(cox[0] == "album" && isAdminOrBot(seq.from_)){
 			await this._createAlbum(seq.to,cox[1],this.config.chanToken);
@@ -1631,7 +1630,7 @@ Link Download: "+idU.id+"\n";
 			this.setState(seq,1)
 		}
 		
-        const action = ['cancel on','cancel off','kick on','kick off','salam on','salam off','protect off','protect on','qr on','qr off']
+        const action = ['autojoin on','autojoin off','cancel on','cancel off','kick on','kick off','salam on','salam off','protect off','protect on','qr on','qr off']
         if(action.includes(txt)) {
             this.setState(seq,0)
         }
@@ -1690,16 +1689,25 @@ Link Download: "+idU.id+"\n";
             this._client.sendMessage(0,bang);
         }else if(txt == '!ginfo' && isBanned(banList, seq.from_)){this._sendMessage(seq,"Not permitted !");}
 
-        const joinByUrl = ['!gurl'];
-        if(joinByUrl.includes(txt)) {
+        const joinByUrl = ['!gurl','!curl'];
+        if(joinByUrl.includes(txt) && txt == "!gurl") {
             this._sendMessage(seq,`Updating group ...`);
-            let updateGroup = await this._getGroup(seq.to);
+            let updateGroup = await this._getGroup(seq.to);//console.info(updateGroup);
             if(updateGroup.preventJoinByTicket === true) {
                 updateGroup.preventJoinByTicket = false;
 				await this._updateGroup(updateGroup);
             }
 			const groupUrl = await this._reissueGroupTicket(seq.to)
             this._sendMessage(seq,`Line group = line://ti/g/${groupUrl}`);
+        }else if(joinByUrl.includes(txt) && txt == "!curl") {
+            this._sendMessage(seq,`Updating group ...`);
+            let updateGroup = await this._getGroup(seq.to);//console.info(updateGroup);
+            if(updateGroup.preventJoinByTicket === false) {
+                updateGroup.preventJoinByTicket = true;
+				await this._updateGroup(updateGroup);
+				seq.text = "Done !";
+            }else{seq.text = "Sudah ditutup !";}
+            this._sendMessage(seq,seq.text);
         }
 		
 		if(txt == "0105" && lockt == 1){
