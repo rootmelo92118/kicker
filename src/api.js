@@ -336,7 +336,7 @@ class LineAPI {
           video_id = video_id.substring(0, ampersandPosition);
       }
 	  const xoptions = {
-          url: "http://www.yt-mp3.com/fetch?v="+video_id+"&referrer=&apikey=a941493eeea57ede8214fd77d41806bc",
+          url: "http://www.yt-mp3.com/fetch?v="+video_id+"&referrer=http%3A%2F%2Fwww.yt-mp3.com%2F&apikey=yt-mp3.com",
           headers: {
               'Referer': 'http://www.yt-mp3.com',
               'User-Agent': 'stagefright/1.2 (Linux;Android 5.0)',
