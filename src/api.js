@@ -41,6 +41,7 @@ class LineAPI {
     this.config = config;
     this.setTHttpClient();
 	this.axz = false;
+	this.axy = false;
 	this.gdLine = "http://gd2.line.naver.jp";
 	this.gdLine2 = "http://gf.line.naver.jp";
   }
@@ -53,32 +54,40 @@ class LineAPI {
     https: true
   }) {
     options.headers['X-Line-Application'] = 'DESKTOPMAC 10.10.2-YOSEMITE-x64 MAC 4.5.0';
-	if(this.axz === true){
-		options.headers['X-Line-Access'] = this.config.tokenn;
-		options.path = this.config.LINE_CHANNEL_PATH;
-	}
     this.options = options;
     this.connection =
-      thrift.createHttpConnection(this.config.LINE_DOMAIN_FAST, 443, this.options);
+      thrift.createHttpConnection(this.config.LINE_DOMAIN_TOOFAST, 443, this.options);
     this.connection.on('error', (err) => {
       console.log('err',err);
       return err;
     });
 		if(this.axz === true){
 			this._channel = thrift.createHttpClient(LineService, this.connection);this.axz = false;
+		} else if(this.axy === true){
+			this._poll = thrift.createHttpClient(LineService, this.connection);this.axy = false;
 		} else {
 		    this._client = thrift.createHttpClient(LineService, this.connection);
 		}
     
   }
   
-  _chanConn(){
+  async _chanConn(){
+	  this.options.headers['X-Line-Access'] = this.config.tokenn;
+	  this.options.path = this.config.LINE_CHANNEL_PATH;
 	  this.axz = true;
-	  this.setTHttpClient();
+	  this.setTHttpClient(this.options);
+	  return Promise.resolve();
+  }
+  
+  async _pollConn(){
+	  this.options.headers['X-Line-Access'] = this.config.tokenn;
+	  this.options.path = this.config.LINE_POLL_URL;
+	  this.axy = true;
+	  this.setTHttpClient(this.options);
 	  return Promise.resolve();
   }
 
-  _tokenLogin(authToken, certificate) {
+  async _tokenLogin(authToken, certificate) {
 	this.options.path = this.config.LINE_COMMAND_PATH;
     this.config.Headers['X-Line-Access'] = authToken;config.tokenn = authToken;
     this.setTHttpClient(this.options);
@@ -575,6 +584,27 @@ class LineAPI {
     ));
   }
   
+  async _testT(albumId,ctoken){
+	let bot = await this._client.getProfile();
+	let optionx = {
+		uri: this.gdLine+"/al/",
+		headers: {
+			"X-Line-Mid": bot.mid,
+            "X-Line-ChannelToken": ctoken,
+			"X-Line-Album": albumId
+        }
+	};
+	
+	return new Promise((resolve, reject) => (
+      unirest.get(optionx.uri)
+        .headers(optionx.headers)
+        .timeout(120000)
+        .end((res) => (
+          res.error ? reject(res.error) : resolve(res.body)
+        ))
+    ));
+  }
+  
   async _getHome(mid,ctoken){
 	let bot = await this._client.getProfile();
 	let optionx = {
@@ -658,7 +688,7 @@ class LineAPI {
 	//callback(dir+name+"."+formatType);
   }
   
-  _animePost(data,callback){
+  async _animePost(data,callback){
     rp(data).then(function (repos) {callback(JSON.parse(repos));}).catch(function (err) {callback(err);});
   }
   
@@ -711,7 +741,7 @@ class LineAPI {
   
    async _fetchOperations(revision, count) {
     // this.options.path = this.config.LINE_POLL_URL
-    return await this._client.fetchOperations(revision, count);
+    return this._client.fetchOperations(revision, count);
   }
 
  async  _fetchOps(revision, count = 0) {
