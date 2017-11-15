@@ -173,7 +173,7 @@ class LINE extends LineAPI {
 			this._client.sendMessage(0, halo);
         }
 
-        if(operation.type == 19) { //ada kick
+        if(operation.type == 19 && !isAdminOrBot(operation.param2)) { //ada kick
             // op1 = group nya
             // op2 = yang 'nge' kick
             // op3 = yang 'di' kick
@@ -185,8 +185,7 @@ class LINE extends LineAPI {
 				//kasihtau.text = "Jangan kick botku !";
 				//this._client.sendMessage(0, kasihtau);
 				var kickhim = 'yes';
-            }
-            if(!isAdminOrBot(operation.param3)){
+            }else if(!isAdminOrBot(operation.param3)){
 				this.textMessage("0106",kasihtau,operation.param3,1);
 				if(!isAdminOrBot(operation.param2)){
 					kasihtau.text = "Jangan main kick !";
