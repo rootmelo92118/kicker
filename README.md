@@ -28,7 +28,7 @@ IMPORTANT
 Still work :construction_worker:
 ----
 **CHANGELOG**
-- New feature: YouSound
+- New feature: Group Utility
 - Bug fixed (AuthToken Login Spam Chat)
 
 **TO - DO**
