@@ -1472,7 +1472,7 @@ Link Download: "+idU.id+"\n";
 				break;
 				default:
 				 vx[0] = "";vx[1] = "";waitMsg = "no";vx[2] = "";vx[3] = "";
-				 this.sendMessage(seq,"#CANCELLED");
+				 this._sendMessage(seq,"#CANCELLED");
 			}}else if(vx[2] == "arg2" && vx[3] == "ticket"){
 				vx[0] = "";vx[1] = "";waitMsg = "no";vx[2] = "";vx[3] = "";
 				if(typeof groupList[txt - 1] !== 'undefined') {
