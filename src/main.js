@@ -11,6 +11,7 @@ const { Message, OpType, Location } = require('../curve-thrift/line_types');
 
 const myBot = ['u5ee3f8b1c2783990512a02c14d312c89','u88551cb4b9ab9508138d5d35da962c9c'];
 const banList = [];//Banned list
+var groupList = new Array();//Group list
 var vx = {};var midnornama,pesane,kickhim;var waitMsg = "no";//DO NOT CHANGE THIS
 const imgArr = ['png','jpg','jpeg','gif','bmp','webp'];//DO NOT CHANGE THIS
 var komenTL = "AutoLike by GoogleX\nline://ti/p/~rakamastah"; //Comment for timeline
@@ -76,6 +77,7 @@ class LINE extends LineAPI {
 => !curl\n\
 => !getimage\n\
 => !ginfo\n\
+=> !grouputil\n\
 => !gURL\n\
 => !halo\n\
 => !kepo\n\
@@ -1428,6 +1430,73 @@ Link Download: "+idU.id+"\n";
 			let { mid, displayName } = await this._client.getProfile();
             this._sendMessage(seq, 'Hai, disini '+displayName);
         }
+		
+		if(vx[1] == "!grouputil" && seq.from_ == vx[0] && waitMsg == "yes"){
+			if(vx[2]=="arg1"){
+			let M = new Message();
+			let listGroups = await this._client.getGroupIdsJoined();
+			let xtxt = "「 Group List 」\n\n";
+			switch(txt){
+				case 'list':
+				    vx[0] = "";vx[1] = "";waitMsg = "no";vx[2] = "";vx[3] = "";groupList = [];
+					M.to = seq.to;
+					listGroups.forEach(function(item, index, array) {
+					  groupList.push(item);
+					});
+					for(var i = 0; i < groupList.length; i++){
+						let numb = i + 1;
+						let groupInfo = await this._client.getGroup(groupList[i]);
+						let gname = groupInfo.name;
+						let memberCount = groupInfo.members.length;
+						xtxt += numb+"). "+gname+" ("+memberCount+")\n";
+					}
+					M.text = xtxt;
+					this._client.sendMessage(0, M);				
+				break;
+				case 'ticket':
+				    vx[2] = "arg2";vx[3] = "ticket";M.to = seq.to;groupList = [];
+					M.text = "Pilih nomor group dibawah ini !";
+					await this._client.sendMessage(0, M);
+					listGroups.forEach(function(item, index, array) {
+					  groupList.push(item);
+					});
+					for(var i = 0; i < groupList.length; i++){
+						let numb = i + 1;
+						let groupInfo = await this._client.getGroup(groupList[i]);
+						let gname = groupInfo.name;
+						let memberCount = groupInfo.members.length;
+						xtxt += numb+"). "+gname+" ("+memberCount+")\n";
+					}
+					M.text = xtxt;
+					this._client.sendMessage(0, M);				
+				break;
+				default:
+				 vx[0] = "";vx[1] = "";waitMsg = "no";vx[2] = "";vx[3] = "";
+				 this.sendMessage(seq,"#CANCELLED");
+			}}else if(vx[2] == "arg2" && vx[3] == "ticket"){
+				vx[0] = "";vx[1] = "";waitMsg = "no";vx[2] = "";vx[3] = "";
+				if(typeof groupList[txt - 1] !== 'undefined') {
+					let updateGroup = await this._getGroup(groupList[txt - 1]);
+					if(updateGroup.preventJoinByTicket === true) {
+					   updateGroup.preventJoinByTicket = false;
+					   await this._updateGroup(updateGroup);
+					}
+					const groupUrl = await this._reissueGroupTicket(groupList[txt - 1]);
+					this._sendMessage(seq,"Line Group -> line://ti/g/"+groupUrl);
+				}else{this._sendMessage(seq,"Group tidak ada !");}
+			}
+		}
+		if(txt == "!grouputil" && isAdminOrBot(seq.from_)){
+			if(vx[2] == null || typeof vx[2] === "undefined" || !vx[2]){
+				waitMsg = "yes";
+			    vx[0] = seq.from_;vx[1] = txt;
+			    this._sendMessage(seq,"「 Group Utility 」\n- Grouplist = list\n- Group Ticket = ticket\n");
+				vx[2] = "arg1";
+			}else{
+				waitMsg = "no";vx[0] = "";vx[1] = "";vx[2] = "";vx[3] = "";
+				this._sendMessage(seq,"#CANCELLED");
+			}
+		}else if(txt == "!grouputil" && !isAdminOrBot(seq.from_)){this._sendMessage(seq,"Not permitted !");}
 		
 		if(cox[0] == "broadcast" && isAdminOrBot(seq.from_) && cox[1]){
             let listMID = [];
