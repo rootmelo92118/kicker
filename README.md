@@ -1,5 +1,5 @@
 # alphat-new-generation
-Forked version of LineAlphat JS (Selfbot) #DEV #15/11/2017 #18PM
+Forked version of LineAlphat JS (Selfbot) #DEV #18/11/2017 #9AM
 <br>LineAlphat -> https://github.com/alfathdirk/LineAlphatJS<br><br>Status: Very Good
 
 <hr>
