@@ -66,6 +66,7 @@ class LINE extends LineAPI {
 ====================\n\
 # Keyword List\n\n\
 => !addcontact *ADMIN*\n\
+=> !adminutil *ADMIN*\n\
 => !animesearch\n\
 => !ban *ADMIN*\n\
 => !banlist\n\
@@ -77,7 +78,7 @@ class LINE extends LineAPI {
 => !curl\n\
 => !getimage\n\
 => !ginfo\n\
-=> !grouputil\n\
+=> !grouputil *ADMIN*\n\
 => !gURL\n\
 => !halo\n\
 => !kepo\n\
@@ -88,6 +89,7 @@ class LINE extends LineAPI {
 => !msg\n\
 => !mute *ADMIN*\n\
 => !myid\n\
+=> !refresh *ADMIN*\n\
 => !sendcontact\n\
 => !setting\n\
 => !sms\n\
@@ -882,6 +884,106 @@ vx[0] = "";vx[1] = "";waitMsg = "no";vx[2] = "";vx[3] = "";
 			}
 		}else if(txt == "!ban" && !isAdminOrBot(seq.from_)){this._sendMessage(seq,"Not permitted !");}
 		
+		if(vx[1] == "!adminutil" && seq.from_ == vx[0] && waitMsg == "yes"){
+			let panjang = txt.split("");
+			let M = new Message();M.to = seq.to;
+			let xtxt = "";
+			if(txt == "cancel"){
+				vx[0] = "";vx[1] = "";waitMsg = "no";vx[2] = "";vx[3] = "";
+				this._sendMessage(seq,"#CANCELLED");
+			}else if(vx[2] == "arg1"){
+				switch(txt){
+					case 'add':
+					    vx[2] = "arg2";vx[3] = txt;
+					    this._sendMessage(seq,"# Kirim kontaknya / mid / tag orangnya yang mau dijadikan admin");
+					break;
+					case 'del':
+					    vx[2] = "arg2";vx[3] = txt;xtxt = "「 Admin List 」\n\n";
+					    await this._sendMessage(seq,"Pilih admin yang mau dihapus");
+						for(var i=0; i < myBot.length; i++){
+							let numb = i+1;
+							let xcontact = await this._client.getContact(myBot[i]);
+							xtxt += numb+"). "+xcontact.displayName+"\n";
+						}
+						M.text = xtxt;
+						this._client.sendMessage(0, M);
+					break;
+					case 'list':
+					    vx[0] = "";vx[1] = "";waitMsg = "no";vx[2] = "";vx[3] = "";
+						for(var i=0; i < myBot.length; i++){
+							let numb = i+1;
+							let xcontact = await this._client.getContact(myBot[i]);
+							xtxt += numb+"). "+xcontact.displayName+"\n";
+						}
+						M.text = xtxt;
+						this._client.sendMessage(0, M);
+					break;
+					default:
+					    vx[0] = "";vx[1] = "";waitMsg = "no";vx[2] = "";vx[3] = "";
+						this._sendMessage(seq,"#CANCELLED");
+					break;
+				}
+			}else if(vx[2] == "arg2" && vx[3] == "add"){
+				if(cot[1]){
+					let ment = seq.contentMetadata.MENTION;
+				    let xment = JSON.parse(ment);let pment = xment.MENTIONEES[0].M;
+					let msg = new Message();msg.to = seq.to;
+					if(isAdminOrBot(pment)){
+						waitMsg = "no";vx[0] = "";vx[1] = "";vx[2] = "";vx[3] = "";
+						msg.text = cot[1]+" , dia udah jadi admin bang...";
+						this._client.sendMessage(0,msg);
+					}else{
+						msg.text = "Done !";
+						this._client.sendMessage(0, msg);
+				        myBot.push(pment);
+						waitMsg = "no";vx[0] = "";vx[1] = "";vx[2] = "";vx[3] = "";
+					}
+				}else if(seq.contentType == 13){
+					let midnya = seq.contentMetadata.mid;let msg = new Message();msg.to = seq.to;
+					if(isAdminOrBot(midnya)){
+						waitMsg = "no";vx[0] = "";vx[1] = "";vx[2] = "";vx[3] = "";
+						msg.text = "Dia sudah masuk daftar admin...";
+						this._client.sendMessage(0, msg);
+					}else{
+						msg.text = "Done !";
+						this._client.sendMessage(0, msg);
+				        myBot.push(midnya);
+						waitMsg = "no";vx[0] = "";vx[1] = "";vx[2] = "";vx[3] = "";
+					}
+				}else if(panjang.length > 30 && panjang[0] == "u"){
+					if(isAdminOrBot(txt)){
+						waitMsg = "no";vx[0] = "";vx[1] = "";vx[2] = "";vx[3] = "";
+						this._sendMessage(seq,"Dia sudah masuk daftar banlist...");
+					}else{
+						let msg = new Message();msg.to = seq.to;msg.text = "Sudah bosku !";
+						this._client.sendMessage(0, msg);
+				        myBot.push(txt);
+						waitMsg = "no";vx[0] = "";vx[1] = "";vx[2] = "";vx[3] = "";
+					}
+				}
+			}else if(vx[2] == "arg2" && vx[3] == "del"){
+				waitMsg = "no";vx[0] = "";vx[1] = "";vx[2] = "";vx[3] = "";
+				let ment = txt-1;
+				if (ment > myBot.length) {
+               	    myBot.splice(ment, 1);
+					this._sendMessage(seq,"Berhasil !");
+                }else{
+					this._sendMessage(seq,"Admin tidak ada !");
+				}
+			}
+		}
+		if(txt == "!adminutil" && isAdminOrBot(seq.from_)){
+			if(vx[2] == null || typeof vx[2] === "undefined" || !vx[2]){
+			    waitMsg = "yes";
+			    vx[0] = seq.from_;vx[1] = txt;
+				vx[2] = "arg1";
+				this._sendMessage(seq,"「 Administrator Utility 」\n\n- Add admin = add\n- Delete admin = del\n- List admin = list");
+			}else{
+				waitMsg = "no";vx[0] = "";vx[1] = "";vx[2] = "";vx[3] = "";
+				this._sendMessage(seq,"#CANCELLED");
+			}
+		}else if(txt == "!adminutil" && !isAdminOrBot(seq.from_)){this._sendMessage(seq,"Not permitted !");}
+		
 		if(vx[1] == "!sms" && seq.from_ == vx[0] && waitMsg == "yes"){
 			let panjang = txt.split("");
 			if(txt == "cancel"){
@@ -1520,6 +1622,22 @@ Link Download: "+idU.id+"\n";
 			this._sendMessage(seq,"Ok bang !");
 			this._kickMember(seq.to,[seq.from_]);
 		}else if(txt == '!kickme' && isBanned(banList, seq.from_)){this._sendMessage(seq,"Not permitted !");}
+		
+		
+		if(txt == "!refresh" && isAdminOrBot(seq.from_)){
+			this._sendMessage(seq, "Clean all message....");
+			await this._client.removeAllMessages();
+			this._sendMessage(seq, "Done !");
+		}
+		
+        const sp = ['!speed','sp','speed','resp','respon'];
+        if(sp.includes(txt) && !isBanned(banList, seq.from_)) {
+			const curTime = (Date.now() / 1000);let M = new Message();M.to=seq.to;M.text = '';M.contentType = 1;M.contentPreview = null;M.contentMetadata = null;
+			await this._client.sendMessage(0,M);
+			const rtime = (Date.now() / 1000);
+            const xtime = rtime	- curTime;
+            this._sendMessage(seq, xtime+' second');
+        }else if(sp.includes(txt) && isBanned(banList, seq.from_)){this._sendMessage(seq,"Not permitted !");}
 		
         if(txt == '!speed' && !isBanned(banList, seq.from_)) {
 			const curTime = Math.floor(Date.now() / 1000);let M = new Message();M.to=seq.to;M.text = '';M.contentType = 1;M.contentPreview = null;M.contentMetadata = null;
