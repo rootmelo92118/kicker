@@ -1,5 +1,5 @@
 # alphat-new-generation
-Forked version of LineAlphat JS (Selfbot) #DEV #25/11/2017 #8AM
+Forked version of LineAlphat JS (Selfbot) #DEV #08/12/2017 #15PM
 <br>LineAlphat -> https://github.com/alfathdirk/LineAlphatJS<br><br>Status: Very Good
 
 <hr>
@@ -28,6 +28,7 @@ IMPORTANT
 Still work :construction_worker:
 ----
 **CHANGELOG**
+- Bug fixed (UA and LA)
 - New feature: Admin Utility
 - Bug fixed (AuthToken Login Spam Chat)
 
