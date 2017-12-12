@@ -56,7 +56,7 @@ class LineAPI {
     options.headers['X-Line-Application'] = 'IOSIPAD\x097.14.0\x09iPhone_OS\x0910.12.0';
     this.options = options;
     this.connection =
-      thrift.createHttpConnection(this.config.LINE_DOMAIN_TOOFAST, 443, this.options);
+      thrift.createHttpConnection(this.config.LINE_DOMAIN_3RD, 443, this.options);
     this.connection.on('error', (err) => {
       console.log('err',err);
       return err;
