@@ -64,14 +64,22 @@ class LineConnect extends LineAPI {
 				this.config.Headers['X-Line-Access'] = config.tokenn;
 				this._channel.issueChannelToken("1341209950",(err, result)=>{
 					config.chanToken = result.channelAccessToken;
-					resolve(this.longpoll());
+					this._client.getLastOpRevision((err,result)=>{
+					    let xrx = result.toString().split(" ");
+					    this.revision = xrx[0].toString() - 1;
+					    resolve(this.longpoll());
+				    })
 				});
 			})
         });
 	} else {
       return new Promise((resolve, reject) => {
         this.getQrFirst().then(async (res) => {
-          resolve(this.longpoll());
+          this._client.getLastOpRevision((err,result)=>{
+			let xrx = result.toString().split(" ");
+			this.revision = xrx[0].toString() - 1;
+			resolve(this.longpoll());
+		  })
         });
       })
     }
