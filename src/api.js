@@ -22,6 +22,8 @@ const imgArr = ['png','jpg','jpeg','gif','bmp','webp'];
 const PinVerifier = require('./pinVerifier');
 var config = require('./config');
 var moment = require('moment');
+var reqx = new LoginRequest();
+var reqxy = new LoginRequest();
 
 function isImg(param) {
     return imgArr.includes(param);
@@ -64,7 +66,7 @@ class LineAPI {
 		if(this.axz === true){
 			this._channel = thrift.createHttpClient(LineService, this.connection);this.axz = false;
 		} else if(this.axy === true){
-			this._poll = thrift.createHttpClient(LineService, this.connection);this.axy = false;
+			this._authService = thrift.createHttpClient(LineService, this.connection);this.axy = false;
 		} else {
 		    this._client = thrift.createHttpClient(LineService, this.connection);
 		}
@@ -79,11 +81,10 @@ class LineAPI {
 	  return Promise.resolve();
   }
   
-  async _pollConn(){
-	  this.options.headers['X-Line-Access'] = this.config.tokenn;
-	  this.options.path = this.config.LINE_POLL_URL;
+  async _authConn(){
 	  this.axy = true;
-	  this.setTHttpClient(this.options);
+	  this.options.path = this.config.LINE_RS;
+      this.setTHttpClient(this.options);
 	  return Promise.resolve();
   }
 
@@ -138,7 +139,6 @@ class LineAPI {
 				 this.options.path = this.config.LINE_RS;
                  this.setTHttpClient(this.options);
 				 const rsaCrypto = pinVerifier.getRSACrypto(credentials);
-				 let reqx = new LoginRequest();
 				 reqx.type = 0;
 				 reqx.identityProvider = this.provider;
 				 reqx.identifier = rsaCrypto.keyname;
@@ -157,10 +157,14 @@ class LineAPI {
                          }
 						 this.options.path = this.config.LINE_COMMAND_PATH;
                          this.setTHttpClient(this.options);
+						 this._authConn();
 						 this._client.pinCode = success.pinCode;
                 		 console.info("\n\n=============================\nEnter This Pincode => "+success.pinCode+"\nto your mobile phone in 2 minutes\n=============================");
                 		 this._checkLoginResultType(success.type, success);
-               		     this._loginWithVerifier(success).then((verifierResult) => {
+						 reqxy.type = 1;
+               		     this._loginWithVerifier((verifierResult) => {
+							 this.options.path = this.config.LINE_COMMAND_PATH;
+                             this.setTHttpClient(this.options);
 							 config.tokenn = verifierResult.authToken;
                		         this._checkLoginResultType(verifierResult.type, verifierResult);
                		         resolve(verifierResult);
@@ -175,13 +179,12 @@ class LineAPI {
 	  ));
   }
 
-  _loginWithVerifier() {
-    return this.getJson(this.config.LINE_CERTIFICATE_URL)
-    .then(
-      (json) =>
-        this._client.loginWithVerifierForCertificate(json.result.verifier)
-      , (err) => console.log(`LoginWithVerifierForCertificate Error: ${err}`)
-    );
+  async _loginWithVerifier(callback) {
+    let retx = await this.getJson(this.config.LINE_CERTIFICATE_URL)
+	reqxy.verifier = retx.result.verifier;
+	this._authService.loginZ(reqxy,(err,success) => {
+		callback(success);
+	})
   }
 
   _setProvider(id) {
@@ -753,7 +756,7 @@ class LineAPI {
     return this._client.fetchOps(revision, count,0,0);
   }
 
-  getJson(path,headerx) {
+  async getJson(path,headerx) {
     return new Promise((resolve, reject) => (
       unirest.get(`https://${this.config.LINE_DOMAIN}${path}`)
         .headers(
