@@ -98,7 +98,6 @@ class LineAPI {
     this.setTHttpClient();
     return new Promise((resolve, reject) => {
     this._client.getAuthQrcode(true, 'LineAlphatFork-PC',(err, result) => {
-      // console.log('here')
       const qrcodeUrl = `line://au/q/${result.verifier}`;
       qrcode.generate(qrcodeUrl,{small: true});
       console.info(`\n\nlink qr code is: ${qrcodeUrl}`)
@@ -108,17 +107,23 @@ class LineAPI {
           .timeout(120000)
           .end(async (res) => {
             const verifiedQr = res.body.result.verifier;
-            const { authToken, certificate } =
-              await this._client.loginWithVerifierForCerificate(verifiedQr);
-			config.tokenn = authToken;
-            this.options.headers['X-Line-Access'] = authToken;
-            this.options.path = this.config.LINE_COMMAND_PATH;
-            this.setTHttpClient(this.options);
-			this.options.headers['User-Agent'] = 'Line/6.0.0 iPad4,1 9.0.2';
-			this.axz = true;
-			this.setTHttpClient(this.options);
-			this.axz = false;
-            resolve({ authToken, certificate });
+			this._authConn();
+			reqx.type = 1;
+			reqx.verifier = verifiedQr;
+			this._authService.loginZ(reqx,(err,success) => {
+				config.tokenn = success.authToken;
+				config.certificate = success.certificate;
+				const authToken = config.tokenn;
+			    const certificate = config.certificate;
+                this.options.headers['X-Line-Access'] = config.tokenn;
+                this.options.path = this.config.LINE_COMMAND_PATH;
+                this.setTHttpClient(this.options);
+			    this.options.headers['User-Agent'] = 'Line/6.0.0 iPad4,1 9.0.2';
+			    this.axz = true;
+			    this.setTHttpClient(this.options);
+			    this.axz = false;
+                resolve({ authToken, certificate, verifiedQr });
+			})
           });
       });
     });
