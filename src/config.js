@@ -3,7 +3,7 @@ const { hostname, platform } = require('os');
 const whichPlatform = platform() === 'darwin' ? 'MAC' : 'win32';
 
 const config = {
-  LINE_DOMAIN_INDO: 'ga2i.line.naver.jp',
+  LINE_DOMAIN_INDO: 'gd2i.line.naver.jp',
   LINE_DOMAIN_FAST: 'gfv.line.naver.jp',
   LINE_DOMAIN_TOOFAST: 't.line.naver.jp',
   LINE_DOMAIN: 'gf.line.naver.jp',
@@ -28,6 +28,7 @@ const config = {
   LINE_COMMAND_PATH: '/S4',
   LINE_COMMAND_PATH_2: '/S3',
   LINE_CERTIFICATE_URL: '/Q',
+  LINE_SQUARE_PATH: '/SQS1',
   LINE_CPF: '/CPF', //What is this ?
   LINE_CHANNEL_PATH: '/CH4',
   LINE_SHOP_PATH: '/SHOP4',
@@ -50,6 +51,7 @@ const config = {
   YT_DL: 'http://www.saveitoffline.com/process/',
   tokenn: '',
   chanToken: '',
+  certificate: '',
   botmid: '',
   doing: 'no'
 };
