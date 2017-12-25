@@ -69,3 +69,6 @@ A: "I recommend you to use Hacker's Keyboard on Playstore"<br>
 
 Q: "How to install latest nodejs on termux ?"<br>
 A: "Simple, `pkg install nodejs-current`"
+
+Q: "How to fix an error like this 'Error: Cannot find module...... ' ?"
+A: "Do `npm i ` !"
