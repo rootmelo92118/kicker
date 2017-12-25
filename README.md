@@ -56,7 +56,7 @@ Contact Me / Need Help ?
 FAQ (Frequently Asked Questions)
 ------
 Q: "How to run this bot 24/7 ?"<br>
-A: "Use Termux on your android phone, and run this bot on it"<br>
+A: "Use Termux on your android phone, and run this bot on it. You can use it 24/7 on VPS or RDP too"<br>
 
 Q: "Im using termux, and i have problem with `npm i` . What i gonna do ?"<br>
 A: "After you clone with `git clone`, then `cd my` and you got problem with `npm i`. All you gonna do is `unzip node.js.zip`"<br>
