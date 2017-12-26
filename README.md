@@ -41,9 +41,9 @@ How to activate AutoLike feature ?
 ------
 - `1. Goto src/bot.js`
 - `2. Then find this " //LINE.aLike() //AutoLike (CAUSE LAG) " (without quotes)`
-- ![1](https://image.prntscr.com/image/A_H70vI7R8_0abRyrotx7g.png)
+- ![1](https://image.prntscr.com/image/7W3W_nc1TTu-vVzyhHnJjw.png)
 - `3. Change into this " LINE.aLike() " (without quotes)`
-- ![2](https://image.prntscr.com/image/Kr3PpIw7QbqKl8w7rKY2jQ.png)
+- ![2](https://image.prntscr.com/image/UVbSbNoAT66b3u6ubPfQLw.png)
 - `4. DONE`
 
 Author
